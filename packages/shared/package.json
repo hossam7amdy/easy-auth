@@ -1,0 +1,23 @@
+{
+  "name": "@easy-auth/shared",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./.build/index.js",
+  "types": "./.build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./.build/index.d.ts",
+      "import": "./.build/index.js",
+      "default": "./.build/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsc",
+    "build": "rm -rf .build && tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10"
+  }
+}
