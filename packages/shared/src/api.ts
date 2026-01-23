@@ -20,12 +20,12 @@ export type SignInResponse = ApiResponse<{
   jwt: string
 }>
 
-export type SignOutRequest = {}
+export type SignOutRequest = Record<string, never>
 export type SignOutResponse = ApiResponse<{
   success: true
 }>
 
-export type GetCurrentUserRequest = {}
+export type GetCurrentUserRequest = Record<string, never>
 export type GetCurrentUserResponse = ApiResponse<UserDto>
 
 export type UpdateCurrentUserRequest = Pick<UserDto, 'name'>
