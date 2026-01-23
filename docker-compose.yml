@@ -4,7 +4,6 @@ services:
     container_name: easy-auth-mongodb
     restart: always
     environment:
-      # These variables create the user mongo-express is trying to use
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
     ports:
