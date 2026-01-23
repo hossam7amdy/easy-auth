@@ -6,6 +6,10 @@ export type EndpointConfig = {
 }
 
 export const ENDPOINT_CONFIGS = {
+  health: {
+    method: 'get',
+    path: '/api/healthz',
+  },
   signin: {
     method: 'post',
     path: '/api/v1/signin',
@@ -31,4 +35,4 @@ export const ENDPOINT_CONFIGS = {
     path: '/api/v1/users/me',
     auth: true,
   },
-}
+} as const

@@ -1,10 +1,19 @@
-import type { UserDto } from './dto.js'
+import type { User } from './types.js'
+
+export type Empty = Record<string, never>
 
 export interface ApiResponse<T> {
   data: T
 }
 
-export type SignUpRequest = Pick<UserDto, 'name' | 'email'> & {
+export type HealthCheckRequest = Empty
+export type HealthCheckResponse = {
+  status: string
+  timestamp: string
+  service: string
+}
+
+export type SignUpRequest = Pick<User, 'name' | 'email'> & {
   password: string
 }
 export type SignUpResponse = ApiResponse<{
@@ -16,17 +25,17 @@ export type SignInRequest = {
   password: string
 }
 export type SignInResponse = ApiResponse<{
-  user: UserDto
+  user: User
   jwt: string
 }>
 
-export type SignOutRequest = Record<string, never>
+export type SignOutRequest = Empty
 export type SignOutResponse = ApiResponse<{
   success: true
 }>
 
-export type GetCurrentUserRequest = Record<string, never>
-export type GetCurrentUserResponse = ApiResponse<UserDto>
+export type GetCurrentUserRequest = Empty
+export type GetCurrentUserResponse = ApiResponse<User>
 
-export type UpdateCurrentUserRequest = Pick<UserDto, 'name'>
-export type UpdateCurrentUserResponse = ApiResponse<UserDto>
+export type UpdateCurrentUserRequest = Pick<User, 'name'>
+export type UpdateCurrentUserResponse = ApiResponse<User>

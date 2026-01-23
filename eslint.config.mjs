@@ -55,7 +55,12 @@ export default defineConfig(
       },
     },
     rules: {
+      'no-unsafe-finally': 'warn',
+      '@typescript-eslint/no-unsafe-call': 'warn',
       'react-refresh/only-export-components': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
     },
   },
 )
