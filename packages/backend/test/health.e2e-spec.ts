@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common'
 import request from 'supertest'
 import { AppModule } from '../src/app.module'
 import { ENDPOINT_CONFIGS } from '@easy-auth/shared'
+import { HttpResponse } from '../src/common/http'
 
 describe('Health Check (e2e)', () => {
   let app: INestApplication
@@ -25,11 +26,13 @@ describe('Health Check (e2e)', () => {
       .get(ENDPOINT_CONFIGS.health.path)
       .expect(200)
       .expect((res) => {
-        expect(res.body).toEqual({
-          status: 'ok 🚀',
-          timestamp: expect.any(String),
-          service: 'easy-auth-backend',
-        })
+        expect(res.body).toEqual(
+          new HttpResponse({
+            status: 'ok 🚀',
+            timestamp: expect.any(String),
+            service: 'easy-auth-backend',
+          }),
+        )
       })
   })
 })

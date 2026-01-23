@@ -7,11 +7,11 @@ export interface ApiResponse<T> {
 }
 
 export type HealthCheckRequest = Empty
-export type HealthCheckResponse = {
+export type HealthCheckResponse = ApiResponse<{
   status: string
   timestamp: string
   service: string
-}
+}>
 
 export type SignUpRequest = Pick<User, 'name' | 'email'> & {
   password: string

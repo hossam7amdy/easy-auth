@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { HealthCheckController } from './health-check.controller'
+import { HttpResponse } from '../../common/http'
 
 describe('HealthCheckController', () => {
   let controller: HealthCheckController
@@ -19,11 +20,14 @@ describe('HealthCheckController', () => {
   describe('check', () => {
     it('should return health status', () => {
       const result = controller.check()
-      expect(result).toEqual({
+
+      const expected = new HttpResponse({
         status: 'ok 🚀',
         timestamp: expect.any(String),
         service: 'easy-auth-backend',
       })
+
+      expect(result).toEqual(expected)
     })
   })
 })

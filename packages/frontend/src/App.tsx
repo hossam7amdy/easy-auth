@@ -48,19 +48,19 @@ export function App() {
               <div className="flex justify-between">
                 <span className="text-gray-400">Status:</span>
                 <span className="text-green-300 font-medium">
-                  {health.status.toUpperCase()}
+                  {health.data.status.toUpperCase()}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Service:</span>
                 <span className="text-purple-300 font-medium">
-                  {health.service}
+                  {health.data.service}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Timestamp:</span>
                 <span className="text-blue-300 font-mono text-sm">
-                  {new Date(health.timestamp).toLocaleString()}
+                  {new Date(health.data.timestamp).toLocaleString()}
                 </span>
               </div>
             </div>
