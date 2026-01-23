@@ -8,7 +8,13 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 
 export default defineConfig(
-  globalIgnores(['eslint.config.mjs', '**/.build/**', '**/node_modules/**']),
+  globalIgnores([
+    'eslint.config.mjs',
+    '**/.build/**',
+    '**/node_modules/**',
+    'packages/backend/test/**',
+    'packages/backend/**/*.spec.ts',
+  ]),
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,

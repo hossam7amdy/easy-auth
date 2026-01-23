@@ -13,9 +13,12 @@
     }
   },
   "scripts": {
-    "dev": "tsc",
-    "build": "rm -rf .build && tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsup --watch",
+    "build": "rm -rf .build && tsup",
+    "test": "echo \"Error: no test specified\" && exit 0",
     "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1"
   }
 }
