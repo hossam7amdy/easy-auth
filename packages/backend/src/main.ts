@@ -3,6 +3,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { AppModule } from './app.module'
 import { Logger, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { HttpExceptionFilter } from './common/filters'
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap')
@@ -22,10 +23,13 @@ async function bootstrap() {
     }),
   )
 
+  app.useGlobalFilters(new HttpExceptionFilter())
+
   const config = new DocumentBuilder()
     .setTitle('Easy Auth API')
     .setDescription('The Easy Auth API description')
     .setVersion('1.0')
+    .addBearerAuth()
     .build()
 
   const document = SwaggerModule.createDocument(app, config)
