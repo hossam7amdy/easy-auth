@@ -37,12 +37,12 @@ describe('AuthController', () => {
     }
 
     it('should return created user wrapped in HttpResponse', async () => {
-      authService.signUp.mockResolvedValue(mockUser)
+      authService.signUp.mockResolvedValue({ id: mockUser.id })
 
       const result = await controller.signUp(signUpDto)
 
       expect(authService.signUp).toHaveBeenCalledWith(signUpDto)
-      expect(result).toEqual(new HttpResponse({ user: mockUser }))
+      expect(result).toEqual(new HttpResponse({ id: mockUser.id }))
     })
   })
 })

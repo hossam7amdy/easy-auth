@@ -17,7 +17,7 @@ export type SignUpRequest = Pick<User, 'name' | 'email'> & {
   password: string
 }
 export type SignUpResponse = ApiResponse<{
-  user: User
+  id: string
 }>
 
 export type SignInRequest = {

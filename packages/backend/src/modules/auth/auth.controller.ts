@@ -26,6 +26,6 @@ export class AuthController {
     @Body() signUpDto: SignUpRequestDto,
   ): Promise<SignUpResponseDto> {
     const user = await this.authService.signUp(signUpDto)
-    return new HttpResponse({ user })
+    return new HttpResponse(user)
   }
 }

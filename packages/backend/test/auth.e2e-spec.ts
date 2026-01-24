@@ -53,14 +53,9 @@ describe('Auth (e2e)', () => {
         .send(validSignUpData)
         .expect(201)
 
-      expect(response.body.data.user).toMatchObject({
+      expect(response.body.data).toEqual({
         id: expect.any(String),
-        email: validSignUpData.email,
-        name: validSignUpData.name,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
       })
-      expect(response.body.data.user.password).toBeUndefined()
     })
 
     it('should return 409 for duplicate email', async () => {

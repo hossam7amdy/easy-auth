@@ -47,10 +47,8 @@ export function SignupForm() {
         ENDPOINT_CONFIGS.signup,
         data,
       ),
-    onSuccess: (response) => {
-      setSuccessMessage(
-        `Welcome, ${response.data.user.name}! Your account has been created.`,
-      )
+    onSuccess: () => {
+      setSuccessMessage(`Your account has been created.`)
       reset()
     },
     onError: (error: ApiError) => {

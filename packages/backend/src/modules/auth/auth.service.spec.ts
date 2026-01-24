@@ -62,10 +62,6 @@ describe('AuthService', () => {
       })
       expect(result).toEqual({
         id: '507f1f77bcf86cd799439011',
-        email: mockUser.email,
-        name: mockUser.name,
-        createdAt: mockUser.createdAt,
-        updatedAt: mockUser.updatedAt,
       })
     })
 

@@ -6,7 +6,7 @@ import {
   Matches,
   IsNotEmpty,
 } from 'class-validator'
-import type { SignUpRequest, SignUpResponse, User } from '@easy-auth/shared'
+import type { SignUpRequest, SignUpResponse } from '@easy-auth/shared'
 
 export class SignUpRequestDto implements SignUpRequest {
   @ApiProperty({
@@ -42,26 +42,9 @@ export class SignUpRequestDto implements SignUpRequest {
   password: string
 }
 
-class UserDto implements User {
+class SignUpDataDto {
   @ApiProperty({ example: '507f1f77bcf86cd799439011' })
   id: string
-
-  @ApiProperty({ example: 'hossam@easy.com' })
-  email: string
-
-  @ApiProperty({ example: 'Hossam Hamdy' })
-  name: string
-
-  @ApiProperty({ example: '2023-01-01T00:00:00.000Z' })
-  createdAt: string | Date
-
-  @ApiProperty({ example: '2023-01-01T00:00:00.000Z' })
-  updatedAt: string | Date
-}
-
-class SignUpDataDto {
-  @ApiProperty({ type: UserDto })
-  user: UserDto
 }
 
 export class SignUpResponseDto implements SignUpResponse {
