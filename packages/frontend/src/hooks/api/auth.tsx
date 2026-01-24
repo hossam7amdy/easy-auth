@@ -6,7 +6,8 @@ import {
   type SignUpRequest,
   type SignUpResponse,
 } from '@easy-auth/shared'
-import { callEndpoint, type ApiError } from '@/lib/fetch'
+import { callEndpoint, queryClient, type ApiError } from '@/lib/fetch'
+import { removeLocalStorageJWT, setLocalStorageJWT } from '@/lib/jwt'
 
 export function useSignIn(): UseMutationResult<
   SignInResponse,
@@ -19,6 +20,9 @@ export function useSignIn(): UseMutationResult<
         ENDPOINT_CONFIGS.signin,
         data,
       ),
+    onSuccess({ data }) {
+      setLocalStorageJWT(data.jwt)
+    },
   })
 }
 
@@ -33,5 +37,15 @@ export function useSignUp(): UseMutationResult<
         ENDPOINT_CONFIGS.signup,
         data,
       ),
+  })
+}
+
+export function useSignOut() {
+  return useMutation({
+    mutationFn: () => {
+      removeLocalStorageJWT()
+      queryClient.clear()
+      return Promise.resolve({ success: true })
+    },
   })
 }

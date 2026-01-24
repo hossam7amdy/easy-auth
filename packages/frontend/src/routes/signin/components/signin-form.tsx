@@ -1,7 +1,6 @@
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { signinSchema, type SigninFormData } from './signin.schema'
 import { ApiError } from '@/lib/fetch'
@@ -23,8 +22,8 @@ import {
 import { useSignIn } from '@/hooks/api'
 
 export function SigninForm() {
+  const location = useLocation()
   const navigate = useNavigate()
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const {
     register,
@@ -42,12 +41,9 @@ export function SigninForm() {
   const { mutateAsync, isPending } = useSignIn()
 
   const onSubmit = async (data: SigninFormData) => {
-    setSuccessMessage(null)
     await mutateAsync(data, {
-      onSuccess: (response) => {
-        setSuccessMessage('Signed in successfully!')
-        localStorage.setItem('jwt', response.data.jwt)
-        void navigate('/')
+      onSuccess: () => {
+        void navigate(location.state?.from || '/')
       },
       onError: (error: ApiError) => {
         if (error.status === 401) {
@@ -74,12 +70,6 @@ export function SigninForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {successMessage && (
-          <div className="mb-6 p-4 bg-green-50 text-green-700 border border-green-200 rounded-md text-sm text-center">
-            {successMessage}
-          </div>
-        )}
-
         {errors.root && (
           <div className="mb-6 p-4 bg-red-50 text-red-700 border border-red-200 rounded-md text-sm text-center">
             {errors.root.message}
