@@ -11,7 +11,7 @@ import { CurrentUserDto } from './dto/get-current-user.dto'
 import { ENDPOINT_CONFIGS } from '@easy-auth/shared'
 
 @ApiTags('Users')
-@Controller('users')
+@Controller()
 export class UserController {
   constructor() {}
 
