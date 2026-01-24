@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { UserController } from './user.controller'
 import { CurrentUserDto } from './dto/get-current-user.dto'
+import { HttpResponse } from '../../common/http'
 
 describe('UserController', () => {
   let controller: UserController
@@ -25,7 +26,7 @@ describe('UserController', () => {
 
       const result = controller.getProfile(mockUser)
 
-      expect(result).toEqual(mockUser)
+      expect(result).toEqual(new HttpResponse(mockUser))
     })
   })
 })

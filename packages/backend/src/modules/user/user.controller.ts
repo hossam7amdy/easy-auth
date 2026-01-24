@@ -9,6 +9,7 @@ import { JwtAuthGuard } from '../auth/guards'
 import { CurrentUser } from '../../common/decorators'
 import { CurrentUserDto } from './dto/get-current-user.dto'
 import { ENDPOINT_CONFIGS } from '@easy-auth/shared'
+import { HttpResponse } from '../../common/http'
 
 @ApiTags('Users')
 @Controller()
@@ -22,6 +23,6 @@ export class UserController {
   @ApiResponse({ status: 200, type: CurrentUserDto })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getProfile(@CurrentUser() user: CurrentUserDto) {
-    return user
+    return new HttpResponse(user)
   }
 }
