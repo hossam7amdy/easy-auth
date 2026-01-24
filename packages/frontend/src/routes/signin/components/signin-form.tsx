@@ -111,6 +111,7 @@ export function SigninForm() {
               <Input
                 id="password"
                 type="password"
+                placeholder="Enter your password"
                 autoComplete="current-password"
                 aria-invalid={!!errors.password}
                 {...register('password')}

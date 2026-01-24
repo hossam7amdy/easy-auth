@@ -125,6 +125,7 @@ export function SignupForm() {
               <Input
                 id="password"
                 type="password"
+                placeholder="Enter a strong password"
                 autoComplete="new-password"
                 aria-invalid={!!errors.password}
                 {...register('password')}
