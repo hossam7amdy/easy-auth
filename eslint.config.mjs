@@ -11,6 +11,7 @@ export default defineConfig(
   globalIgnores([
     'eslint.config.mjs',
     '**/.build/**',
+    '**/coverage/**',
     '**/node_modules/**',
     'packages/backend/test/**',
     'packages/backend/**/*.spec.ts',

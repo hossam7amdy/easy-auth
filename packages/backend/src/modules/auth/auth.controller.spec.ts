@@ -18,6 +18,7 @@ describe('AuthController', () => {
   beforeEach(async () => {
     const mockAuthService = {
       signUp: jest.fn(),
+      signIn: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -43,6 +44,23 @@ describe('AuthController', () => {
 
       expect(authService.signUp).toHaveBeenCalledWith(signUpDto)
       expect(result).toEqual(new HttpResponse({ id: mockUser.id }))
+    })
+  })
+
+  describe('signIn', () => {
+    const signInDto = {
+      email: 'test@example.com',
+      password: 'SecureP@ss1',
+    }
+
+    it('should return JWT wrapped in HttpResponse', async () => {
+      const mockJwt = { jwt: 'mockToken123' }
+      authService.signIn.mockResolvedValue(mockJwt)
+
+      const result = await controller.signIn(signInDto)
+
+      expect(authService.signIn).toHaveBeenCalledWith(signInDto)
+      expect(result).toEqual(new HttpResponse(mockJwt))
     })
   })
 })

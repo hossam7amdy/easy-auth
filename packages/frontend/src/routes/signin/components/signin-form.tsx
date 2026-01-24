@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
-import { ENDPOINT_CONFIGS } from '@easy-auth/shared'
-import type { SignUpRequest, SignUpResponse } from '@easy-auth/shared'
+import { Link, useNavigate } from 'react-router-dom'
 
-import { signupSchema, type SignupFormData } from '@/lib/schemas'
-import { callEndpoint, ApiError } from '@/lib/fetch'
+import { signinSchema, type SigninFormData } from './signin.schema'
+import { ApiError } from '@/lib/fetch'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -22,8 +20,10 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card'
+import { useSignIn } from '@/hooks/api'
 
-export function SignupForm() {
+export function SigninForm() {
+  const navigate = useNavigate()
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const {
@@ -31,53 +31,46 @@ export function SignupForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-    reset,
-  } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
+  } = useForm<SigninFormData>({
+    resolver: zodResolver(signinSchema),
     defaultValues: {
       email: '',
-      name: '',
       password: '',
     },
   })
 
-  const signupMutation = useMutation({
-    mutationFn: (data: SignUpRequest) =>
-      callEndpoint<SignUpRequest, SignUpResponse>(
-        ENDPOINT_CONFIGS.signup,
-        data,
-      ),
-    onSuccess: () => {
-      setSuccessMessage(`Your account has been created.`)
-      reset()
-    },
-    onError: (error: ApiError) => {
-      if (error.status === 409) {
-        setError('email', {
-          type: 'manual',
-          message:
-            'This email is already registered. Please use a different email or sign in.',
-        })
-      } else {
-        setError('root', {
-          type: 'manual',
-          message: error.message || 'Something went wrong. Please try again.',
-        })
-      }
-    },
-  })
+  const { mutateAsync, isPending } = useSignIn()
 
-  const onSubmit = (data: SignupFormData) => {
+  const onSubmit = async (data: SigninFormData) => {
     setSuccessMessage(null)
-    signupMutation.mutate(data)
+    await mutateAsync(data, {
+      onSuccess: (response) => {
+        setSuccessMessage('Signed in successfully!')
+        localStorage.setItem('jwt', response.data.jwt)
+        void navigate('/')
+      },
+      onError: (error: ApiError) => {
+        if (error.status === 401) {
+          setError('root', {
+            type: 'manual',
+            message: 'Invalid email or password.',
+          })
+        } else {
+          setError('root', {
+            type: 'manual',
+            message: error.message || 'Something went wrong. Please try again.',
+          })
+        }
+      },
+    })
   }
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+        <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
         <CardDescription>
-          Enter your information to create an account
+          Enter your credentials to access your account
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -113,51 +106,33 @@ export function SignupForm() {
               <FieldError errors={[errors.email]} />
             </Field>
 
-            <Field data-invalid={!!errors.name}>
-              <FieldLabel htmlFor="name">Name</FieldLabel>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Hossam Hamdy"
-                autoComplete="name"
-                aria-invalid={!!errors.name}
-                {...register('name')}
-              />
-              <FieldError errors={[errors.name]} />
-            </Field>
-
             <Field data-invalid={!!errors.password}>
               <FieldLabel htmlFor="password">Password</FieldLabel>
               <Input
                 id="password"
                 type="password"
-                autoComplete="new-password"
+                autoComplete="current-password"
                 aria-invalid={!!errors.password}
                 {...register('password')}
               />
               <FieldError errors={[errors.password]} />
-              <p className="text-[0.8rem] text-muted-foreground">
-                Min 8 characters with letter, number, and special character
-              </p>
             </Field>
           </FieldGroup>
 
           <Button
             type="submit"
-            disabled={isSubmitting || signupMutation.isPending}
+            disabled={isSubmitting || isPending}
             className="w-full"
           >
-            {signupMutation.isPending
-              ? 'Creating account...'
-              : 'Create Account'}
+            {isPending ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
 
         <div className="mt-4 text-center text-sm">
-          Already have an account?{' '}
-          <a href="#" className="underline">
-            Sign in
-          </a>
+          Don&apos;t have an account?{' '}
+          <Link to="/signup" className="underline">
+            Sign up
+          </Link>
         </div>
       </CardContent>
     </Card>

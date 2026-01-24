@@ -25,7 +25,6 @@ export type SignInRequest = {
   password: string
 }
 export type SignInResponse = ApiResponse<{
-  user: User
   jwt: string
 }>
 
