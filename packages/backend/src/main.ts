@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { AppModule } from './app.module'
-import { Logger } from '@nestjs/common'
+import { Logger, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 
 async function bootstrap() {
@@ -13,6 +13,14 @@ async function bootstrap() {
   app.enableCors({
     origin: configService.get<string>('frontend.url'),
   })
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
 
   const config = new DocumentBuilder()
     .setTitle('Easy Auth API')
