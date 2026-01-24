@@ -1,5 +1,6 @@
 import type { EndpointConfig } from '@easy-auth/shared'
 import { QueryClient } from '@tanstack/react-query'
+import { getLocalStorageJWT, removeLocalStorageJWT } from './jwt'
 
 export const API_HOST: string =
   import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
@@ -33,16 +34,25 @@ export async function callEndpoint<Request, Response>(
   endpoint: EndpointConfig,
   request?: Request,
 ): Promise<Response> {
-  const { path, method } = endpoint
+  const { path, method, auth } = endpoint
   const requestBody = request ? JSON.stringify(request) : undefined
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(auth && {
+      Authorization: `Bearer ${getLocalStorageJWT()}`,
+    }),
+  }
+
   const response = await fetch(`${API_HOST}${path}`, {
     method: method.toUpperCase(),
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: requestBody,
   })
   if (!response.ok) {
+    if (response.status === 401) {
+      removeLocalStorageJWT()
+      window.location.reload()
+    }
     let msg = ''
     try {
       const json = (await response.json()) as { error: string }

@@ -1,18 +1,25 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Component as Signin } from '@/routes/signin'
 import { Component as Signup } from '@/routes/signup'
+import { Component as Dashboard } from '@/routes/dashboard'
+import { ProtectedRoute, PublicRoute } from '@/components/authentication'
 
 export function App() {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <BrowserRouter>
         <Routes>
-          <Route path="/signin" element={<Signin />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/" element={<Navigate to="/signin" replace />} />
+          <Route element={<PublicRoute />}>
+            <Route path="/signin" element={<Signin />} />
+            <Route path="/signup" element={<Signup />} />
+          </Route>
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Dashboard />} />
+          </Route>
         </Routes>
-      </div>
-    </BrowserRouter>
+      </BrowserRouter>
+    </div>
   )
 }
 
