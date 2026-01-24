@@ -109,4 +109,53 @@ describe('Auth (e2e)', () => {
       )
     })
   })
+
+  describe('POST /api/v1/signin', () => {
+    const validUser = {
+      email: 'signin@example.com',
+      name: 'Signin User',
+      password: 'SecureP@ss1',
+    }
+
+    beforeEach(async () => {
+      // Create a user for signin
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signup.path)
+        .send(validUser)
+        .expect(201)
+    })
+
+    it('should return JWT for valid credentials', async () => {
+      const response = await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signin.path)
+        .send({
+          email: validUser.email,
+          password: validUser.password,
+        })
+        .expect(200)
+
+      expect(response.body.data).toHaveProperty('jwt')
+      expect(typeof response.body.data.jwt).toBe('string')
+    })
+
+    it('should return 401 for invalid password', async () => {
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signin.path)
+        .send({
+          email: validUser.email,
+          password: 'WrongPassword123',
+        })
+        .expect(401)
+    })
+
+    it('should return 401 for non-existent email', async () => {
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signin.path)
+        .send({
+          email: 'nonexistent@example.com',
+          password: validUser.password,
+        })
+        .expect(401)
+    })
+  })
 })

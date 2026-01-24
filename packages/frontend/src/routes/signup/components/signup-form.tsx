@@ -1,12 +1,10 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
-import { ENDPOINT_CONFIGS } from '@easy-auth/shared'
-import type { SignUpRequest, SignUpResponse } from '@easy-auth/shared'
 
-import { signupSchema, type SignupFormData } from '@/lib/schemas'
-import { callEndpoint, ApiError } from '@/lib/fetch'
+import { signupSchema, type SignupFormData } from './signup.schema'
+import { ApiError } from '@/lib/fetch'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -22,6 +20,7 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card'
+import { useSignUp } from '@/hooks/api'
 
 export function SignupForm() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -41,35 +40,30 @@ export function SignupForm() {
     },
   })
 
-  const signupMutation = useMutation({
-    mutationFn: (data: SignUpRequest) =>
-      callEndpoint<SignUpRequest, SignUpResponse>(
-        ENDPOINT_CONFIGS.signup,
-        data,
-      ),
-    onSuccess: () => {
-      setSuccessMessage(`Your account has been created.`)
-      reset()
-    },
-    onError: (error: ApiError) => {
-      if (error.status === 409) {
-        setError('email', {
-          type: 'manual',
-          message:
-            'This email is already registered. Please use a different email or sign in.',
-        })
-      } else {
-        setError('root', {
-          type: 'manual',
-          message: error.message || 'Something went wrong. Please try again.',
-        })
-      }
-    },
-  })
+  const { mutateAsync, isPending } = useSignUp()
 
-  const onSubmit = (data: SignupFormData) => {
+  const onSubmit = async (data: SignupFormData) => {
     setSuccessMessage(null)
-    signupMutation.mutate(data)
+    await mutateAsync(data, {
+      onSuccess: () => {
+        setSuccessMessage(`Your account has been created.`)
+        reset()
+      },
+      onError: (error: ApiError) => {
+        if (error.status === 409) {
+          setError('email', {
+            type: 'manual',
+            message:
+              'This email is already registered. Please use a different email or sign in.',
+          })
+        } else {
+          setError('root', {
+            type: 'manual',
+            message: error.message || 'Something went wrong. Please try again.',
+          })
+        }
+      },
+    })
   }
 
   return (
@@ -131,6 +125,7 @@ export function SignupForm() {
               <Input
                 id="password"
                 type="password"
+                placeholder="Enter a strong password"
                 autoComplete="new-password"
                 aria-invalid={!!errors.password}
                 {...register('password')}
@@ -144,20 +139,18 @@ export function SignupForm() {
 
           <Button
             type="submit"
-            disabled={isSubmitting || signupMutation.isPending}
+            disabled={isSubmitting || isPending}
             className="w-full"
           >
-            {signupMutation.isPending
-              ? 'Creating account...'
-              : 'Create Account'}
+            {isPending ? 'Creating account...' : 'Create Account'}
           </Button>
         </form>
 
         <div className="mt-4 text-center text-sm">
           Already have an account?{' '}
-          <a href="#" className="underline">
+          <Link to="/signin" className="underline">
             Sign in
-          </a>
+          </Link>
         </div>
       </CardContent>
     </Card>

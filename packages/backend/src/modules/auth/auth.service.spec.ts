@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { ConflictException } from '@nestjs/common'
+import { ConflictException, UnauthorizedException } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
+import { JwtService } from '@nestjs/jwt'
+import { ConfigService } from '@nestjs/config'
 import { AuthService } from './auth.service'
 import { UserRepository } from '../user/user.repository'
 
@@ -9,6 +11,8 @@ jest.mock('bcrypt')
 describe('AuthService', () => {
   let service: AuthService
   let userRepository: jest.Mocked<UserRepository>
+  let jwtService: jest.Mocked<JwtService>
+  let configService: jest.Mocked<ConfigService>
 
   const mockUser = {
     id: '507f1f77bcf86cd799439011',
@@ -25,15 +29,27 @@ describe('AuthService', () => {
       create: jest.fn(),
     }
 
+    const mockJwtService = {
+      signAsync: jest.fn(),
+    }
+
+    const mockConfigService = {
+      get: jest.fn(),
+    }
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: UserRepository, useValue: mockUserRepository },
+        { provide: JwtService, useValue: mockJwtService },
+        { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile()
 
     service = module.get<AuthService>(AuthService)
     userRepository = module.get(UserRepository)
+    jwtService = module.get(JwtService)
+    configService = module.get(ConfigService)
   })
 
   afterEach(() => {
@@ -85,6 +101,58 @@ describe('AuthService', () => {
       const createCall = userRepository.create.mock.calls[0][0]
       expect(createCall.password).not.toBe(signUpDto.password)
       expect(createCall.password).toBe('hashedPassword123')
+    })
+  })
+
+  describe('signIn', () => {
+    const signInDto = {
+      email: 'test@example.com',
+      password: 'SecureP@ss1',
+    }
+
+    it('should return JWT when credentials are valid', async () => {
+      userRepository.findByEmail.mockResolvedValue(mockUser as never)
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+      jwtService.signAsync.mockResolvedValue('mockToken' as never)
+      configService.get.mockReturnValueOnce('secret').mockReturnValueOnce('1d')
+
+      const result = await service.signIn(signInDto)
+
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(signInDto.email)
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        signInDto.password,
+        mockUser.password,
+      )
+      expect(jwtService.signAsync).toHaveBeenCalledWith(
+        { sub: mockUser.id, email: mockUser.email },
+        { secret: 'secret', expiresIn: '1d' },
+      )
+      expect(result).toEqual({ jwt: 'mockToken' })
+    })
+
+    it('should throw UnauthorizedException when user not found', async () => {
+      userRepository.findByEmail.mockResolvedValue(null)
+
+      await expect(service.signIn(signInDto)).rejects.toThrow(
+        UnauthorizedException,
+      )
+      await expect(service.signIn(signInDto)).rejects.toThrow(
+        'Invalid credentials',
+      )
+      expect(jwtService.signAsync).not.toHaveBeenCalled()
+    })
+
+    it('should throw UnauthorizedException when password is invalid', async () => {
+      userRepository.findByEmail.mockResolvedValue(mockUser as never)
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
+
+      await expect(service.signIn(signInDto)).rejects.toThrow(
+        UnauthorizedException,
+      )
+      await expect(service.signIn(signInDto)).rejects.toThrow(
+        'Invalid credentials',
+      )
+      expect(jwtService.signAsync).not.toHaveBeenCalled()
     })
   })
 })
