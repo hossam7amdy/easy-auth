@@ -7,7 +7,10 @@ import {
 } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../auth/guards'
 import { CurrentUser } from '../../common/decorators'
-import { CurrentUserDto } from './dto/get-current-user.dto'
+import {
+  CurrentUserDto,
+  CurrentUserResponseDto,
+} from './dto/get-current-user.dto'
 import { ENDPOINT_CONFIGS } from '@easy-auth/shared'
 import { HttpResponse } from '../../common/http'
 
@@ -20,9 +23,9 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ status: 200, type: CurrentUserDto })
+  @ApiResponse({ status: 200, type: CurrentUserResponseDto })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getProfile(@CurrentUser() user: CurrentUserDto) {
+  getProfile(@CurrentUser() user: CurrentUserDto): CurrentUserResponseDto {
     return new HttpResponse(user)
   }
 }
