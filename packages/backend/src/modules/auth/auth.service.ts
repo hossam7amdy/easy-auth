@@ -24,8 +24,10 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email }
 
     const accessToken = this.jwtService.signAsync(payload, {
-      secret: this.configService.get('jwt.secret', { infer: true }),
-      expiresIn: this.configService.get('jwt.expiresIn', { infer: true }),
+      secret: this.configService.getOrThrow('jwt.secret', { infer: true }),
+      expiresIn: this.configService.getOrThrow('jwt.expiresIn', {
+        infer: true,
+      }),
     })
 
     return accessToken
