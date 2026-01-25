@@ -12,7 +12,7 @@ import {
 
 export function Dashboard() {
   const navigate = useNavigate()
-  const { data: user, isLoading, error } = useGetCurrentUser()
+  const { data: user, isLoading, error, refetch } = useGetCurrentUser()
   const { mutate } = useSignOut()
 
   const handleLogout = () => {
@@ -57,9 +57,12 @@ export function Dashboard() {
           Welcome to the application.
         </p>
       </CardContent>
-      <CardFooter>
-        <Button onClick={handleLogout} variant="outline" className="w-full">
+      <CardFooter className="flex">
+        <Button onClick={handleLogout} variant="outline" className="flex-1">
           Sign Out
+        </Button>
+        <Button onClick={() => void refetch()} className="flex-1">
+          Refetch
         </Button>
       </CardFooter>
     </Card>
