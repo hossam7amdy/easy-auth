@@ -29,6 +29,7 @@ const router = createBrowserRouter([
   },
   {
     path: '*',
+    errorElement: <ErrorBoundary />,
     lazy: () => import('./routes/not-found'),
   },
 ])
