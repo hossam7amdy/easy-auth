@@ -4,6 +4,7 @@ import { AppModule } from './app.module'
 import { Logger, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { HttpExceptionFilter } from './common/filters'
+import { LoggingInterceptor } from './common/interceptors'
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap')
@@ -24,6 +25,7 @@ async function bootstrap() {
   )
 
   app.useGlobalFilters(new HttpExceptionFilter())
+  app.useGlobalInterceptors(new LoggingInterceptor())
 
   const config = new DocumentBuilder()
     .setTitle('Easy Auth API')
