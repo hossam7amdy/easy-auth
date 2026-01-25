@@ -38,6 +38,8 @@ A robust, full-stack authentication module designed to provide secure user sessi
 ### Infrastructure
 
 - **Docker Compose**: Orchestrates MongoDB and Mongo Express for easy local development.
+- **GitHub Actions**: CI pipeline for automated Linting, formatting, type-checking, testing, and building on Pull Requests.
+- **Dockerfile**: Multi-stage build for optimized production deployment of the backend.
 
 ---
 
