@@ -30,6 +30,14 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   JWT_EXPIRES_IN: string = '15m'
+
+  @IsInt()
+  @IsOptional()
+  THROTTLE_TTL: number = 60000
+
+  @IsInt()
+  @IsOptional()
+  THROTTLE_LIMIT: number = 60
 }
 
 export function validate(config: Record<string, unknown>) {

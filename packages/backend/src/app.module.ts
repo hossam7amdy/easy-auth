@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common'
+import { APP_GUARD } from '@nestjs/core'
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import configuration, { validate } from './common/config'
 import { MongooseModule } from '@nestjs/mongoose'
@@ -23,8 +25,25 @@ import { AuthModule } from './modules/auth/auth.module'
     HealthCheckModule,
     UserModule,
     AuthModule,
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [
+          {
+            name: 'default',
+            ...config.get('throttler.default')!,
+          },
+        ],
+      }),
+    }),
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

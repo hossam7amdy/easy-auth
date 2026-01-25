@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core'
+import helmet from 'helmet'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { AppModule } from './app.module'
 import { ConsoleLogger, Logger, ValidationPipe } from '@nestjs/common'
@@ -13,6 +14,8 @@ async function bootstrap() {
       json: process.env.NODE_ENV === 'production',
     }),
   })
+
+  app.use(helmet())
 
   const configService = app.get(ConfigService)
 
