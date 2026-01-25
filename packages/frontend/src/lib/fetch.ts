@@ -51,7 +51,6 @@ export async function callEndpoint<Request, Response>(
   if (!response.ok) {
     if (response.status === 401) {
       removeLocalStorageJWT()
-      window.location.reload()
     }
     let msg = ''
     try {
