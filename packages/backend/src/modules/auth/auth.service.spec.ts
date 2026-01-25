@@ -34,7 +34,7 @@ describe('AuthService', () => {
     }
 
     const mockConfigService = {
-      get: jest.fn(),
+      getOrThrow: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -114,7 +114,9 @@ describe('AuthService', () => {
       userRepository.findByEmail.mockResolvedValue(mockUser as never)
       ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
       jwtService.signAsync.mockResolvedValue('mockToken' as never)
-      configService.get.mockReturnValueOnce('secret').mockReturnValueOnce('1d')
+      configService.getOrThrow
+        .mockReturnValueOnce('secret')
+        .mockReturnValueOnce('1d')
 
       const result = await service.signIn(signInDto)
 

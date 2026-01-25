@@ -8,6 +8,7 @@ import { UserRepository } from '../user/user.repository'
 import type { User, SignInRequest, SignUpRequest } from '@easy-auth/shared'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
+import { Configuration } from '../../common/config'
 
 const SALT_ROUNDS = 10
 
@@ -15,7 +16,7 @@ const SALT_ROUNDS = 10
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    private configService: ConfigService,
+    private configService: ConfigService<Configuration>,
     private userRepository: UserRepository,
   ) {}
 
@@ -23,8 +24,10 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email }
 
     const accessToken = this.jwtService.signAsync(payload, {
-      secret: this.configService.get('jwt.secret'),
-      expiresIn: this.configService.get('jwt.expiresIn'),
+      secret: this.configService.getOrThrow('jwt.secret', { infer: true }),
+      expiresIn: this.configService.getOrThrow('jwt.expiresIn', {
+        infer: true,
+      }),
     })
 
     return accessToken
