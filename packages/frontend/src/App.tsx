@@ -1,24 +1,42 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Component as Signin } from '@/routes/signin'
-import { Component as Signup } from '@/routes/signup'
-import { Component as Dashboard } from '@/routes/dashboard'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { ProtectedRoute, PublicRoute } from '@/components/authentication'
+import { ErrorBoundary } from './components/error-boundary'
+
+const router = createBrowserRouter([
+  {
+    element: <ProtectedRoute />,
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: '/',
+        lazy: () => import('./routes/dashboard'),
+      },
+    ],
+  },
+  {
+    element: <PublicRoute />,
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: '/signin',
+        lazy: () => import('./routes/signin'),
+      },
+      {
+        path: '/signup',
+        lazy: () => import('./routes/signup'),
+      },
+    ],
+  },
+  {
+    path: '*',
+    lazy: () => import('./routes/not-found'),
+  },
+])
 
 export function App() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <BrowserRouter>
-        <Routes>
-          <Route element={<PublicRoute />}>
-            <Route path="/signin" element={<Signin />} />
-            <Route path="/signup" element={<Signup />} />
-          </Route>
-
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Dashboard />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <RouterProvider router={router} />
     </div>
   )
 }
