@@ -6,6 +6,7 @@ import { ConsoleLogger, Logger, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { HttpExceptionFilter } from './common/filters'
 import { LoggingInterceptor } from './common/interceptors'
+import { Configuration } from './common/config'
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap')
@@ -17,10 +18,10 @@ async function bootstrap() {
 
   app.use(helmet())
 
-  const configService = app.get(ConfigService)
+  const configService = app.get(ConfigService<Configuration>)
 
   app.enableCors({
-    origin: configService.get<string>('frontend.url'),
+    origin: configService.getOrThrow('frontend.url', { infer: true }),
   })
 
   app.useGlobalPipes(
@@ -44,7 +45,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('api', app, document)
 
-  const port = configService.get<number>('port')!
+  const port = configService.getOrThrow('port', { infer: true })
   await app.listen(port)
 
   logger.log(`Application is running on: http://localhost:${port}`)

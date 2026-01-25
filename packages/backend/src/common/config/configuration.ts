@@ -1,5 +1,5 @@
 export const configuration = () => ({
-  port: parseInt(process.env.PORT!),
+  port: parseInt(process.env.PORT || '3000', 10),
   database: {
     uri: process.env.MONGODB_URI,
   },
@@ -8,12 +8,12 @@ export const configuration = () => ({
   },
   jwt: {
     secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN as '15m',
+    expiresIn: process.env.JWT_EXPIRES_IN,
   },
   throttler: {
     default: {
-      ttl: parseInt(process.env.THROTTLE_TTL!),
-      limit: parseInt(process.env.THROTTLE_LIMIT!),
+      ttl: parseInt(process.env.THROTTLE_TTL || '60000', 10),
+      limit: parseInt(process.env.THROTTLE_LIMIT || '10', 10),
     },
   },
 })

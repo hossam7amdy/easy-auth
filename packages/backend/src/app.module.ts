@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common'
 import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import configuration, { validate } from './common/config'
+import configuration, { Configuration, validate } from './common/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { HealthCheckModule } from './modules/health-check/health-check.module'
 import { UserModule } from './modules/user/user.module'
@@ -17,8 +17,8 @@ import { AuthModule } from './modules/auth/auth.module'
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('database.uri'),
+      useFactory: (configService: ConfigService<Configuration>) => ({
+        uri: configService.getOrThrow('database.uri', { infer: true }),
       }),
       inject: [ConfigService],
     }),
@@ -28,11 +28,16 @@ import { AuthModule } from './modules/auth/auth.module'
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
+      useFactory: (configService: ConfigService<Configuration>) => ({
         throttlers: [
           {
             name: 'default',
-            ...config.get('throttler.default')!,
+            ttl: configService.getOrThrow('throttler.default.ttl', {
+              infer: true,
+            }),
+            limit: configService.getOrThrow('throttler.default.limit', {
+              infer: true,
+            }),
           },
         ],
       }),
