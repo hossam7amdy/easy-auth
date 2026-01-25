@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core'
+import helmet from 'helmet'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { AppModule } from './app.module'
 import { Logger, ValidationPipe } from '@nestjs/common'
@@ -8,6 +9,8 @@ import { HttpExceptionFilter } from './common/filters'
 async function bootstrap() {
   const logger = new Logger('Bootstrap')
   const app = await NestFactory.create(AppModule)
+
+  app.use(helmet())
 
   const configService = app.get(ConfigService)
 
