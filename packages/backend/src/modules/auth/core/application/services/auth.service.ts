@@ -1,10 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
-import { UserService } from '../user/core/application/services/user.service'
+import { UserService } from '../../../../user/core/application/services/user.service'
 import type { UserDto, SignInRequest, SignUpRequest } from '@easy-auth/shared'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
-import { Configuration } from '../../common/config'
+import { Configuration } from '../../../../../common/config'
 
 const SALT_ROUNDS = 10
 

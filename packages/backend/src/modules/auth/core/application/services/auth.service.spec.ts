@@ -8,7 +8,7 @@ import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { AuthService } from './auth.service'
-import { UserService } from '../user/core/application/services/user.service'
+import { UserService } from '../../../../user/core/application/services/user.service'
 
 jest.mock('bcrypt')
 

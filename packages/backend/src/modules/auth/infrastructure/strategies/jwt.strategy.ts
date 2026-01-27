@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
-import { UserService } from '../../user/core/application/services/user.service'
-import type { Configuration } from '../../../common/config/configuration'
+import { UserService } from '../../../user/core/application/services/user.service'
+import type { Configuration } from '../../../../common/config/configuration'
 import { UserDto } from '@easy-auth/shared'
 
 export interface JwtPayload {

@@ -5,7 +5,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../../auth/guards'
+import { JwtAuthGuard } from '../../auth/infrastructure/guards'
 import { CurrentUser } from '../../../common/decorators'
 import {
   CurrentUserDto,

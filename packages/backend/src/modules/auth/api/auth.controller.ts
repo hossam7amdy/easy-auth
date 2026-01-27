@@ -9,10 +9,10 @@ import {
   ApiCreatedResponse,
 } from '@nestjs/swagger'
 import { ENDPOINT_CONFIGS } from '@easy-auth/shared'
-import { AuthService } from './auth.service'
+import { AuthService } from '../core/application/services/auth.service'
 import { SignUpRequestDto, SignUpResponseDto } from './dto/signup.dto'
 import { SignInRequestDto, SignInResponseDto } from './dto/signin.dto'
-import { HttpResponse } from '../../common/http'
+import { HttpResponse } from '../../../common/http'
 
 @ApiTags('Auth')
 @Controller()
