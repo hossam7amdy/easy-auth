@@ -1,11 +1,7 @@
-import {
-  Injectable,
-  ConflictException,
-  UnauthorizedException,
-} from '@nestjs/common'
+import { Injectable, UnauthorizedException } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
-import { UserRepository } from '../user/user.repository'
-import type { User, SignInRequest, SignUpRequest } from '@easy-auth/shared'
+import { UserService } from '../user/core/application/services/user.service'
+import type { UserDto, SignInRequest, SignUpRequest } from '@easy-auth/shared'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { Configuration } from '../../common/config'
@@ -17,14 +13,16 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService<Configuration>,
-    private userRepository: UserRepository,
+    private userService: UserService,
   ) {}
 
-  private async generateAccessToken(user: User): Promise<string> {
+  private async generateAccessToken(user: UserDto): Promise<string> {
     const payload = { sub: user.id, email: user.email }
 
     const accessToken = this.jwtService.signAsync(payload, {
-      secret: this.configService.getOrThrow('jwt.secret', { infer: true }),
+      secret: this.configService.getOrThrow('jwt.secret', {
+        infer: true,
+      }),
       expiresIn: this.configService.getOrThrow('jwt.expiresIn', {
         infer: true,
       }),
@@ -36,17 +34,12 @@ export class AuthService {
   async signUp(signUpDto: SignUpRequest): Promise<{ id: string }> {
     const { email, name, password } = signUpDto
 
-    const existingUser = await this.userRepository.findByEmail(email)
-    if (existingUser) {
-      throw new ConflictException('A user with this email already exists')
-    }
-
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
 
-    const user = await this.userRepository.create({
+    const user = await this.userService.create({
       email,
       name,
-      password: hashedPassword,
+      passwordHash: hashedPassword,
     })
 
     return {
@@ -55,22 +48,34 @@ export class AuthService {
   }
 
   async signIn(signInDto: SignInRequest): Promise<{ jwt: string }> {
-    const { email, password } = signInDto
+    try {
+      const { email, password } = signInDto
 
-    const user = await this.userRepository.findByEmail(email)
-    if (!user) {
+      const user = await this.userService.findByEmail(email)
+
+      const isPasswordValid = await bcrypt.compare(
+        password,
+        user.password || '',
+      )
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid credentials')
+      }
+
+      const sharedUser = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }
+
+      const accessToken = await this.generateAccessToken(sharedUser)
+
+      return {
+        jwt: accessToken,
+      }
+    } catch {
       throw new UnauthorizedException('Invalid credentials')
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password)
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials')
-    }
-
-    const accessToken = await this.generateAccessToken(user)
-
-    return {
-      jwt: accessToken,
     }
   }
 }

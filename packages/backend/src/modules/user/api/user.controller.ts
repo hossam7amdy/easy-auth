@@ -5,14 +5,14 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../auth/guards'
-import { CurrentUser } from '../../common/decorators'
+import { JwtAuthGuard } from '../../auth/guards'
+import { CurrentUser } from '../../../common/decorators'
 import {
   CurrentUserDto,
   CurrentUserResponseDto,
 } from './dto/get-current-user.dto'
 import { ENDPOINT_CONFIGS } from '@easy-auth/shared'
-import { HttpResponse } from '../../common/http'
+import { HttpResponse } from '../../../common/http'
 
 @ApiTags('Users')
 @Controller()

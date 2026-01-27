@@ -1,10 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
-import { UserRepository } from '../../user/user.repository'
+import { UserService } from '../../user/core/application/services/user.service'
 import type { Configuration } from '../../../common/config/configuration'
-import { User } from '@easy-auth/shared'
+import { UserDto } from '@easy-auth/shared'
 
 export interface JwtPayload {
   sub: string
@@ -16,7 +16,7 @@ export interface JwtPayload {
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     configService: ConfigService<Configuration>,
-    private readonly userRepository: UserRepository,
+    private readonly userService: UserService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -25,17 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     })
   }
 
-  async validate(payload: JwtPayload): Promise<User> {
-    const user = await this.userRepository.findById(payload.sub)
-    if (!user) {
-      throw new UnauthorizedException('User not found')
-    }
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    }
+  async validate(payload: JwtPayload): Promise<UserDto> {
+    return this.userService.findById(payload.sub)
   }
 }
