@@ -14,7 +14,7 @@ export class UserMongoRepository implements UserRepositoryPort {
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.userModel.findOne({ email }).exec()
+    const user = await this.userModel.findOne({ email: { $eq: email } }).exec()
     if (!user) return null
     return UserMapper.toDomain(user)
   }
