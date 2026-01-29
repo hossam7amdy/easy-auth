@@ -2,9 +2,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
-import { UserRepository } from '../../user/user.repository'
+import { UserRepository } from '../../user/repositories/user.repository'
 import type { Configuration } from '../../../common/config/configuration'
-import { User } from '@easy-auth/shared'
+import { UserDto } from '@easy-auth/shared'
 
 export interface JwtPayload {
   sub: string
@@ -21,11 +21,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.getOrThrow('jwt.secret', { infer: true }),
+      secretOrKey: configService.getOrThrow('jwt.secret', {
+        infer: true,
+      }),
     })
   }
 
-  async validate(payload: JwtPayload): Promise<User> {
+  async validate(payload: JwtPayload): Promise<UserDto> {
     const user = await this.userRepository.findById(payload.sub)
     if (!user) {
       throw new UnauthorizedException('User not found')

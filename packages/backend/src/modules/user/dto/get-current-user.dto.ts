@@ -1,7 +1,7 @@
-import type { User, GetCurrentUserResponse } from '@easy-auth/shared'
+import type { UserDto, GetCurrentUserResponse } from '@easy-auth/shared'
 import { ApiProperty } from '@nestjs/swagger'
 
-export class CurrentUserDto implements User {
+export class CurrentUserDto implements UserDto {
   @ApiProperty({ example: '507f1f77bcf86cd799439011' })
   id: string
 
