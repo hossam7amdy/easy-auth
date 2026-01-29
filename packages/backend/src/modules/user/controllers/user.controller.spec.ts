@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { UserController } from './user.controller'
-import { CurrentUserDto } from './dto/get-current-user.dto'
-import { HttpResponse } from '../../common/http'
+import { CurrentUserDto } from '../dto/get-current-user.dto'
+import { HttpResponse } from '../../../common/http'
 
 describe('UserController', () => {
   let controller: UserController

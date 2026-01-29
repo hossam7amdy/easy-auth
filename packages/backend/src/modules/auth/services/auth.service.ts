@@ -4,11 +4,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
-import { UserRepository } from '../user/user.repository'
-import type { User, SignInRequest, SignUpRequest } from '@easy-auth/shared'
+import { UserRepository } from '../../user/repositories/user.repository'
+import type { UserDto, SignInRequest, SignUpRequest } from '@easy-auth/shared'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
-import { Configuration } from '../../common/config'
+import { Configuration } from '../../../common/config'
 
 const SALT_ROUNDS = 10
 
@@ -20,11 +20,13 @@ export class AuthService {
     private userRepository: UserRepository,
   ) {}
 
-  private async generateAccessToken(user: User): Promise<string> {
+  private async generateAccessToken(user: UserDto): Promise<string> {
     const payload = { sub: user.id, email: user.email }
 
     const accessToken = this.jwtService.signAsync(payload, {
-      secret: this.configService.getOrThrow('jwt.secret', { infer: true }),
+      secret: this.configService.getOrThrow('jwt.secret', {
+        infer: true,
+      }),
       expiresIn: this.configService.getOrThrow('jwt.expiresIn', {
         infer: true,
       }),
