@@ -44,25 +44,10 @@ export class AuthService {
     return accessToken
   }
 
-  async signUp(signUpDto: SignUpRequest): Promise<{ id: string }> {
-    const { email, name, password } = signUpDto
-
-    const existingUser = await this.userRepository.findByEmail(email)
-    if (existingUser) {
-      throw new ConflictException('A user with this email already exists')
-    }
-
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
-
-    const user = await this.userRepository.create({
-      email,
-      name,
-      password: hashedPassword,
-    })
-
-    const token = await this.verificationService.createToken(user.id)
-
-    // Send verification email (fire-and-forget)
+  private sendVerificationEmail(
+    user: { email: string; name: string },
+    token: string,
+  ): void {
     const frontendUrl = this.configService.getOrThrow('frontend.url', {
       infer: true,
     })
@@ -85,6 +70,27 @@ export class AuthService {
           error,
         )
       })
+  }
+
+  async signUp(signUpDto: SignUpRequest): Promise<{ id: string }> {
+    const { email, name, password } = signUpDto
+
+    const existingUser = await this.userRepository.findByEmail(email)
+    if (existingUser) {
+      throw new ConflictException('A user with this email already exists')
+    }
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
+
+    const user = await this.userRepository.create({
+      email,
+      name,
+      password: hashedPassword,
+    })
+
+    const token = await this.verificationService.createToken(user.id)
+
+    this.sendVerificationEmail(user, token)
 
     return {
       id: user.id,
@@ -138,29 +144,7 @@ export class AuthService {
 
     const token = await this.verificationService.createToken(user.id)
 
-    const frontendUrl = this.configService.getOrThrow('frontend.url', {
-      infer: true,
-    })
-    const verificationLink = `${frontendUrl}/verify-email?token=${token}`
-
-    const emailTemplate = getVerificationEmailTemplate({
-      name: user.name,
-      verificationLink,
-    })
-
-    // Fire-and-forget email sending (same as signup)
-    this.emailService
-      .sendMail({
-        to: user.email,
-        subject: 'Verify your email address',
-        ...emailTemplate,
-      })
-      .catch((error) => {
-        this.logger.error(
-          `Failed to send verification email to ${user.email}`,
-          error,
-        )
-      })
+    this.sendVerificationEmail(user, token)
 
     return { success: true }
   }
