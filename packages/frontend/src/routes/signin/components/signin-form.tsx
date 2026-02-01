@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -19,11 +20,13 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card'
-import { useSignIn } from '@/hooks/api'
+import { useSignIn, useResendVerification } from '@/hooks/api'
 
 export function SigninForm() {
   const location = useLocation()
   const navigate = useNavigate()
+  const [isUnverified, setIsUnverified] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
 
   const {
     register,
@@ -39,14 +42,30 @@ export function SigninForm() {
   })
 
   const { mutateAsync, isPending } = useSignIn()
+  const {
+    mutate: resendVerification,
+    isPending: isResending,
+    isSuccess: isResendSuccess,
+    isError: isResendError,
+    error: resendError,
+  } = useResendVerification()
 
   const onSubmit = async (data: SigninFormData) => {
+    setIsUnverified(false)
+    setUserEmail(data.email)
+
     await mutateAsync(data, {
       onSuccess: () => {
         void navigate(location.state?.from || '/')
       },
       onError: (error: ApiError) => {
-        if (error.status === 401) {
+        if (error.status === 403) {
+          setIsUnverified(true)
+          setError('root', {
+            type: 'manual',
+            message: 'Please verify your email address before signing in.',
+          })
+        } else if (error.status === 401) {
           setError('root', {
             type: 'manual',
             message: 'Invalid email or password.',
@@ -61,6 +80,12 @@ export function SigninForm() {
     })
   }
 
+  const handleResendVerification = () => {
+    if (userEmail) {
+      resendVerification(userEmail)
+    }
+  }
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -73,6 +98,40 @@ export function SigninForm() {
         {errors.root && (
           <div className="mb-6 p-4 bg-red-50 text-red-700 border border-red-200 rounded-md text-sm text-center">
             {errors.root.message}
+          </div>
+        )}
+
+        {isUnverified && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+            <p className="text-sm text-yellow-800 mb-3">
+              We've sent a verification email to <strong>{userEmail}</strong>.
+              If you didn't receive it, you can request a new one.
+            </p>
+            {isResendSuccess && (
+              <div className="mb-3 p-3 bg-green-50 text-green-700 border border-green-200 rounded-md text-sm">
+                Verification email sent! Please check your inbox.
+              </div>
+            )}
+            {isResendError && (
+              <div className="mb-3 p-3 bg-red-50 text-red-700 border border-red-200 rounded-md text-sm">
+                {resendError && resendError.status === 429
+                  ? 'Too many requests. Please wait a few minutes before trying again.'
+                  : 'Failed to send verification email. Please try again.'}
+              </div>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleResendVerification}
+              disabled={isResending || isResendSuccess}
+              className="w-full"
+            >
+              {isResending
+                ? 'Sending...'
+                : isResendSuccess
+                  ? 'Email Sent!'
+                  : 'Resend Verification Email'}
+            </Button>
           </div>
         )}
 

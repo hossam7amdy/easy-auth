@@ -25,6 +25,10 @@ const router = createBrowserRouter([
         path: '/signup',
         lazy: () => import('./routes/signup'),
       },
+      {
+        path: '/verify-email',
+        lazy: () => import('./routes/verify-email'),
+      },
     ],
   },
   {
