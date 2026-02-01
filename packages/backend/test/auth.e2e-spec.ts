@@ -125,17 +125,16 @@ describe('Auth (e2e)', () => {
         .expect(201)
     })
 
-    it('should return JWT for valid credentials', async () => {
+    it('should return 403 for unverified email', async () => {
       const response = await request(app.getHttpServer())
         .post(ENDPOINT_CONFIGS.signin.path)
         .send({
           email: validUser.email,
           password: validUser.password,
         })
-        .expect(200)
+        .expect(403)
 
-      expect(response.body.data).toHaveProperty('jwt')
-      expect(typeof response.body.data.jwt).toBe('string')
+      expect(response.body.message).toBe('Email not verified')
     })
 
     it('should return 401 for invalid password', async () => {
@@ -156,6 +155,177 @@ describe('Auth (e2e)', () => {
           password: validUser.password,
         })
         .expect(401)
+    })
+  })
+
+  describe('Email Verification Flow (e2e)', () => {
+    const testUser = {
+      email: 'verify@example.com',
+      name: 'Verify User',
+      password: 'SecureP@ss1',
+    }
+
+    it('should complete full verification flow', async () => {
+      // 1. Sign up creates user
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signup.path)
+        .send(testUser)
+        .expect(201)
+
+      // 2. Get verification token from database (simulating email click)
+      const tokenDoc = await connection
+        .collection('verification_tokens')
+        .findOne({ type: 'email_verification' })
+      expect(tokenDoc).toBeTruthy()
+      const token = tokenDoc!.token
+
+      // 3. Verify email with token
+      const verifyResponse = await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.verifyEmail.path)
+        .send({ token })
+        .expect(200)
+
+      expect(verifyResponse.body.data).toEqual({ success: true })
+
+      // 4. Token should be deleted after verification
+      const deletedToken = await connection
+        .collection('verification_tokens')
+        .findOne({ token })
+      expect(deletedToken).toBeNull()
+
+      // 5. User should be marked as verified
+      const user = await connection
+        .collection('users')
+        .findOne({ email: testUser.email })
+      expect(user!.isEmailVerified).toBe(true)
+
+      // 6. Now signin should work
+      const signinResponse = await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signin.path)
+        .send({
+          email: testUser.email,
+          password: testUser.password,
+        })
+        .expect(200)
+
+      expect(signinResponse.body.data).toHaveProperty('jwt')
+    })
+
+    it('should reject invalid verification token', async () => {
+      const response = await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.verifyEmail.path)
+        .send({ token: 'invalid-token-uuid' })
+        .expect(400)
+
+      expect(response.body.message).toBe(
+        'Invalid or expired verification token',
+      )
+    })
+
+    it('should reject expired verification token', async () => {
+      // Create user
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signup.path)
+        .send(testUser)
+        .expect(201)
+
+      // Get token and manually set it as expired
+      const tokenDoc = await connection
+        .collection('verification_tokens')
+        .findOne({ type: 'email_verification' })
+      const token = tokenDoc!.token
+
+      // Update expiry to past date
+      await connection.collection('verification_tokens').updateOne(
+        { token },
+        { $set: { expiresAt: new Date(Date.now() - 1000) } }, // 1 second ago
+      )
+
+      // Try to verify with expired token
+      const response = await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.verifyEmail.path)
+        .send({ token })
+        .expect(400)
+
+      expect(response.body.message).toBe(
+        'Invalid or expired verification token',
+      )
+    })
+  })
+
+  describe('POST /api/v1/resend-verification', () => {
+    const testUser = {
+      email: 'resend@example.com',
+      name: 'Resend User',
+      password: 'SecureP@ss1',
+    }
+
+    it('should resend verification email for unverified user', async () => {
+      // Create user
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signup.path)
+        .send(testUser)
+        .expect(201)
+
+      // Delete the original token
+      await connection
+        .collection('verification_tokens')
+        .deleteMany({ type: 'email_verification' })
+
+      // Resend verification
+      const response = await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.resendVerification.path)
+        .send({ email: testUser.email })
+        .expect(200)
+
+      expect(response.body.data).toEqual({ success: true })
+
+      // New token should exist
+      const newToken = await connection
+        .collection('verification_tokens')
+        .findOne({ type: 'email_verification' })
+      expect(newToken).toBeTruthy()
+    })
+
+    it('should resend verification email for unverified user', async () => {
+      // Create and verify user
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signup.path)
+        .send(testUser)
+        .expect(201)
+
+      const tokenDoc = await connection
+        .collection('verification_tokens')
+        .findOne({ type: 'email_verification' })
+      const token = tokenDoc!.token
+
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.verifyEmail.path)
+        .send({ token })
+        .expect(200)
+
+      // Try to resend - should return success but not create new token
+      const response = await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.resendVerification.path)
+        .send({ email: testUser.email })
+        .expect(200)
+
+      expect(response.body.data).toEqual({ success: true })
+
+      // No verification token should exist for verified user
+      const noToken = await connection
+        .collection('verification_tokens')
+        .findOne({ type: 'email_verification' })
+      expect(noToken).toBeNull()
+    })
+
+    it('should return success for non-existent user (security)', async () => {
+      const response = await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.resendVerification.path)
+        .send({ email: 'nonexistent@example.com' })
+        .expect(200)
+
+      expect(response.body.data).toEqual({ success: true })
     })
   })
 })

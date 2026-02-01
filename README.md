@@ -8,6 +8,7 @@ A robust, full-stack authentication module designed to provide secure user sessi
 
 - **Authentication**:
   - Secure **Sign Up** and **Sign In** flows.
+  - **Email Verification** - Users must verify their email before signing in (15-minute token expiry).
   - **JWT-based** stateless authentication.
   - Protected API routes using `Passport` and `Guards`.
   - Secure password hashing with `Bcrypt`.
@@ -37,7 +38,8 @@ A robust, full-stack authentication module designed to provide secure user sessi
 
 ### Infrastructure
 
-- **Docker Compose**: Orchestrates MongoDB and Mongo Express for easy local development.
+- **Docker Compose**: Orchestrates MongoDB, Mongo Express, and Mailpit for easy local development.
+  - **Mailpit**: Email testing tool for intercepting and viewing emails in development ([http://localhost:8025](http://localhost:8025)).
 - **GitHub Actions**: CI pipeline for automated Linting, formatting, type-checking, testing, and building on Pull Requests.
 - **Dockerfile**: Multi-stage build for optimized production deployment of the backend.
 
@@ -47,7 +49,6 @@ A robust, full-stack authentication module designed to provide secure user sessi
 
 The following core authentication features are required to make this module complete and production-ready:
 
-- **Email Verification**: Verify user email addresses to prevent spam and fake accounts.
 - **Password Management**:
   - **Forget & Reset Password**: Secure flows for recovering lost passwords.
   - **Change Password**: Allow authenticated users to update their password.
@@ -118,6 +119,7 @@ Once everything is running:
 2.  **API Docs**: Open [http://localhost:3000/api](http://localhost:3000/api) to explore the Swagger UI.
 3.  **Health Check**: Visit [http://localhost:3000/api/health](http://localhost:3000/api/health) to confirm the backend is online.
 4.  **DB Admin**: Open [http://localhost:8081](http://localhost:8081) to manage MongoDB via Mongo Express.
+5.  **Email Testing**: Open [http://localhost:8025](http://localhost:8025) to view verification emails sent via Mailpit.
 
 ---
 

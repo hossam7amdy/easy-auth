@@ -19,6 +19,8 @@ describe('AuthController', () => {
     const mockAuthService = {
       signUp: jest.fn(),
       signIn: jest.fn(),
+      verifyEmail: jest.fn(),
+      resendVerification: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -61,6 +63,32 @@ describe('AuthController', () => {
 
       expect(authService.signIn).toHaveBeenCalledWith(signInDto)
       expect(result).toEqual(new HttpResponse(mockJwt))
+    })
+  })
+
+  describe('verifyEmail', () => {
+    it('should verify email and return success', async () => {
+      const verifyEmailDto = { token: 'valid-token-123' }
+      authService.verifyEmail.mockResolvedValue({ success: true })
+
+      const result = await controller.verifyEmail(verifyEmailDto)
+
+      expect(authService.verifyEmail).toHaveBeenCalledWith(verifyEmailDto.token)
+      expect(result).toEqual(new HttpResponse({ success: true }))
+    })
+  })
+
+  describe('resendVerification', () => {
+    it('should resend verification email and return success', async () => {
+      const resendDto = { email: 'test@example.com' }
+      authService.resendVerification.mockResolvedValue({ success: true })
+
+      const result = await controller.resendVerification(resendDto)
+
+      expect(authService.resendVerification).toHaveBeenCalledWith(
+        resendDto.email,
+      )
+      expect(result).toEqual(new HttpResponse({ success: true }))
     })
   })
 })

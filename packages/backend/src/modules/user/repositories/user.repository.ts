@@ -28,4 +28,11 @@ export class UserRepository {
     const user = new this.userModel(data)
     return user.save()
   }
+
+  async update(
+    id: string,
+    data: Partial<UserEntity>,
+  ): Promise<UserDocument | null> {
+    return this.userModel.findByIdAndUpdate(id, data, { new: true }).exec()
+  }
 }

@@ -38,6 +38,30 @@ class EnvironmentVariables {
   @IsInt()
   @IsOptional()
   THROTTLE_LIMIT: number = 60
+
+  @IsString()
+  @IsOptional()
+  EMAIL_FROM: string = 'noreply@localhost'
+
+  @IsString()
+  @IsOptional()
+  SMTP_HOST: string = 'localhost'
+
+  @IsInt()
+  @IsOptional()
+  SMTP_PORT: number = 1025
+
+  @IsString()
+  @IsOptional()
+  SMTP_SECURE: string = 'false'
+
+  @IsString()
+  @IsOptional()
+  SMTP_USER?: string
+
+  @IsString()
+  @IsOptional()
+  SMTP_PASS?: string
 }
 
 export function validate(config: Record<string, unknown>) {

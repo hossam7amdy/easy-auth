@@ -11,6 +11,9 @@ export class CurrentUserDto implements UserDto {
   @ApiProperty({ example: 'hossam@easy.com' })
   email: string
 
+  @ApiProperty({ example: true })
+  isEmailVerified: boolean
+
   @ApiProperty({ example: '2022-01-01T00:00:00.000Z' })
   createdAt: string | Date
 

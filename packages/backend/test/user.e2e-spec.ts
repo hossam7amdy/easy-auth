@@ -49,12 +49,24 @@ describe('User (e2e)', () => {
     let jwtToken: string
 
     beforeEach(async () => {
-      // Create a user and get JWT token
+      // Create a user
       await request(app.getHttpServer())
         .post(ENDPOINT_CONFIGS.signup.path)
         .send(validUser)
         .expect(201)
 
+      // Verify email
+      const tokenDoc = await connection
+        .collection('verification_tokens')
+        .findOne({ type: 'email_verification' })
+      const token = tokenDoc!.token
+
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.verifyEmail.path)
+        .send({ token })
+        .expect(200)
+
+      // Get JWT token
       const signInResponse = await request(app.getHttpServer())
         .post(ENDPOINT_CONFIGS.signin.path)
         .send({
@@ -76,6 +88,7 @@ describe('User (e2e)', () => {
         id: expect.any(String),
         email: validUser.email,
         name: validUser.name,
+        isEmailVerified: true,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       })
