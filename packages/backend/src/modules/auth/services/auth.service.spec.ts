@@ -1,10 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { ConflictException, UnauthorizedException } from '@nestjs/common'
+import {
+  ConflictException,
+  UnauthorizedException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { AuthService } from './auth.service'
 import { UserRepository } from '../../user/repositories/user.repository'
+import { EmailService } from '../../email/services/email.service'
+import { VerificationService } from '../../verification/services/verification.service'
 
 jest.mock('bcrypt')
 
@@ -19,14 +26,21 @@ describe('AuthService', () => {
     email: 'test@example.com',
     name: 'Test User',
     password: 'hashedPassword123',
+    isEmailVerified: true,
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
+  }
+
+  const mockUnverifiedUser = {
+    ...mockUser,
+    isEmailVerified: false,
   }
 
   beforeEach(async () => {
     const mockUserRepository = {
       findByEmail: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     }
 
     const mockJwtService = {
@@ -34,7 +48,18 @@ describe('AuthService', () => {
     }
 
     const mockConfigService = {
-      getOrThrow: jest.fn(),
+      getOrThrow: jest.fn().mockReturnValue('http://localhost:5173'),
+    }
+
+    const mockEmailService = {
+      sendMail: jest.fn().mockResolvedValue(undefined),
+    }
+
+    const mockVerificationService = {
+      createToken: jest.fn().mockResolvedValue('mock-token-uuid'),
+      validateToken: jest.fn(),
+      deleteToken: jest.fn(),
+      deleteTokensForUser: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -43,6 +68,8 @@ describe('AuthService', () => {
         { provide: UserRepository, useValue: mockUserRepository },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: EmailService, useValue: mockEmailService },
+        { provide: VerificationService, useValue: mockVerificationService },
       ],
     }).compile()
 
@@ -155,6 +182,123 @@ describe('AuthService', () => {
         'Invalid credentials',
       )
       expect(jwtService.signAsync).not.toHaveBeenCalled()
+    })
+
+    it('should throw ForbiddenException when email is not verified', async () => {
+      userRepository.findByEmail.mockResolvedValue(mockUnverifiedUser as never)
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+
+      await expect(service.signIn(signInDto)).rejects.toThrow(
+        ForbiddenException,
+      )
+      await expect(service.signIn(signInDto)).rejects.toThrow(
+        'Email not verified',
+      )
+      expect(jwtService.signAsync).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('verifyEmail', () => {
+    it('should verify email successfully', async () => {
+      const token = 'valid-token'
+      const userId = '507f1f77bcf86cd799439011'
+      const mockVerificationService = service[
+        'verificationService'
+      ] as jest.Mocked<VerificationService>
+      const mockUserRepository = service[
+        'userRepository'
+      ] as jest.Mocked<UserRepository>
+
+      mockVerificationService.validateToken.mockResolvedValue({ userId })
+      mockUserRepository.update.mockResolvedValue(mockUser as never)
+      mockVerificationService.deleteToken.mockResolvedValue(undefined)
+
+      const result = await service.verifyEmail(token)
+
+      expect(mockVerificationService.validateToken).toHaveBeenCalledWith(token)
+      expect(mockUserRepository.update).toHaveBeenCalledWith(userId, {
+        isEmailVerified: true,
+      })
+      expect(mockVerificationService.deleteToken).toHaveBeenCalledWith(token)
+      expect(result).toEqual({ success: true })
+    })
+
+    it('should throw BadRequestException for invalid token', async () => {
+      const token = 'invalid-token'
+      const mockVerificationService = service[
+        'verificationService'
+      ] as jest.Mocked<VerificationService>
+
+      mockVerificationService.validateToken.mockRejectedValue(
+        new BadRequestException('Invalid or expired verification token'),
+      )
+
+      await expect(service.verifyEmail(token)).rejects.toThrow(
+        BadRequestException,
+      )
+    })
+  })
+
+  describe('resendVerification', () => {
+    it('should resend verification email for unverified user', async () => {
+      const email = 'test@example.com'
+      const mockEmailService = service[
+        'emailService'
+      ] as jest.Mocked<EmailService>
+      const mockVerificationService = service[
+        'verificationService'
+      ] as jest.Mocked<VerificationService>
+
+      userRepository.findByEmail.mockResolvedValue(mockUnverifiedUser as never)
+      mockVerificationService.createToken.mockResolvedValue('new-token')
+      mockEmailService.sendMail.mockResolvedValue(undefined)
+
+      const result = await service.resendVerification(email)
+
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(email)
+      expect(mockVerificationService.createToken).toHaveBeenCalledWith(
+        mockUnverifiedUser.id,
+      )
+      expect(mockEmailService.sendMail).toHaveBeenCalled()
+      expect(result).toEqual({ success: true })
+    })
+
+    it('should return success without sending email for verified user', async () => {
+      const email = 'test@example.com'
+      const mockEmailService = service[
+        'emailService'
+      ] as jest.Mocked<EmailService>
+      const mockVerificationService = service[
+        'verificationService'
+      ] as jest.Mocked<VerificationService>
+
+      userRepository.findByEmail.mockResolvedValue(mockUser as never)
+
+      const result = await service.resendVerification(email)
+
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(email)
+      expect(mockVerificationService.createToken).not.toHaveBeenCalled()
+      expect(mockEmailService.sendMail).not.toHaveBeenCalled()
+      expect(result).toEqual({ success: true })
+    })
+
+    it('should return success without sending email for non-existent user', async () => {
+      const email = 'nonexistent@example.com'
+      const mockEmailService = service[
+        'emailService'
+      ] as jest.Mocked<EmailService>
+      const mockVerificationService = service[
+        'verificationService'
+      ] as jest.Mocked<VerificationService>
+
+      userRepository.findByEmail.mockResolvedValue(null)
+
+      const result = await service.resendVerification(email)
+
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(email)
+      expect(mockVerificationService.createToken).not.toHaveBeenCalled()
+      expect(mockEmailService.sendMail).not.toHaveBeenCalled()
+      expect(result).toEqual({ success: true })
     })
   })
 })

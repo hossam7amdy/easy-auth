@@ -20,6 +20,7 @@ describe('UserController', () => {
         id: '507f1f77bcf86cd799439011',
         email: 'test@example.com',
         name: 'Test User',
+        isEmailVerified: true,
         createdAt: new Date('2026-01-01'),
         updatedAt: new Date('2026-01-01'),
       }

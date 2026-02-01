@@ -30,7 +30,21 @@ export type SignInResponse = ApiResponse<{
 
 export type SignOutRequest = Empty
 export type SignOutResponse = ApiResponse<{
-  success: true
+  success: boolean
+}>
+
+export type VerifyEmailRequest = {
+  token: string
+}
+export type VerifyEmailResponse = ApiResponse<{
+  success: boolean
+}>
+
+export type ResendVerificationRequest = {
+  email: string
+}
+export type ResendVerificationResponse = ApiResponse<{
+  success: boolean
 }>
 
 export type GetCurrentUserRequest = Empty

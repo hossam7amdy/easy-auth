@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { HealthCheckModule } from './modules/health-check/health-check.module'
 import { UserModule } from './modules/user/user.module'
 import { AuthModule } from './modules/auth/auth.module'
+import { EmailModule } from './modules/email/email.module'
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AuthModule } from './modules/auth/auth.module'
     HealthCheckModule,
     UserModule,
     AuthModule,
+    EmailModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -5,6 +5,10 @@ import {
   type SignInResponse,
   type SignUpRequest,
   type SignUpResponse,
+  type VerifyEmailRequest,
+  type VerifyEmailResponse,
+  type ResendVerificationRequest,
+  type ResendVerificationResponse,
 } from '@easy-auth/shared'
 import { callEndpoint, queryClient, type ApiError } from '@/lib/fetch'
 import { removeLocalStorageJWT, setLocalStorageJWT } from '@/lib/jwt'
@@ -36,6 +40,34 @@ export function useSignUp(): UseMutationResult<
       callEndpoint<SignUpRequest, SignUpResponse>(
         ENDPOINT_CONFIGS.signup,
         data,
+      ),
+  })
+}
+
+export function useVerifyEmail(): UseMutationResult<
+  VerifyEmailResponse,
+  ApiError,
+  string
+> {
+  return useMutation({
+    mutationFn: (token: string) =>
+      callEndpoint<VerifyEmailRequest, VerifyEmailResponse>(
+        ENDPOINT_CONFIGS.verifyEmail,
+        { token },
+      ),
+  })
+}
+
+export function useResendVerification(): UseMutationResult<
+  ResendVerificationResponse,
+  ApiError,
+  string
+> {
+  return useMutation({
+    mutationFn: (email: string) =>
+      callEndpoint<ResendVerificationRequest, ResendVerificationResponse>(
+        ENDPOINT_CONFIGS.resendVerification,
+        { email },
       ),
   })
 }

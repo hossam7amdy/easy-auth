@@ -76,8 +76,14 @@ export function SignupForm() {
       </CardHeader>
       <CardContent>
         {successMessage && (
-          <div className="mb-6 p-4 bg-green-50 text-green-700 border border-green-200 rounded-md text-sm text-center">
-            {successMessage}
+          <div className="mb-6 p-4 bg-green-50 text-green-700 border border-green-200 rounded-md text-sm">
+            <p className="font-semibold mb-2">{successMessage}</p>
+            <p className="mb-2">
+              <strong>Please check your email to verify your account.</strong>
+            </p>
+            <p className="text-xs text-green-600">
+              If you don't see the email, please check your spam folder.
+            </p>
           </div>
         )}
 
