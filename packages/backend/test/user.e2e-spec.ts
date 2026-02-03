@@ -40,7 +40,7 @@ describe('User (e2e)', () => {
     }
   })
 
-  describe('GET /api/v1/users/me', () => {
+  describe(`${ENDPOINT_CONFIGS.getCurrentUser.method.toUpperCase()} ${ENDPOINT_CONFIGS.getCurrentUser.path}`, () => {
     const validUser = {
       email: 'profile@example.com',
       name: 'Profile User',

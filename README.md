@@ -117,7 +117,7 @@ Once everything is running:
 
 1.  **Frontend**: Open [http://localhost:5173](http://localhost:5173) to see the application.
 2.  **API Docs**: Open [http://localhost:3000/api](http://localhost:3000/api) to explore the Swagger UI.
-3.  **Health Check**: Visit [http://localhost:3000/api/health](http://localhost:3000/api/health) to confirm the backend is online.
+3.  **Health Check**: Visit [http://localhost:3000/healthz](http://localhost:3000/healthz) to confirm the backend is online.
 4.  **DB Admin**: Open [http://localhost:8081](http://localhost:8081) to manage MongoDB via Mongo Express.
 5.  **Email Testing**: Open [http://localhost:8025](http://localhost:8025) to view verification emails sent via Mailpit.
 

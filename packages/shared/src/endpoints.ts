@@ -20,39 +20,39 @@ export const ENDPOINT_CONFIGS: Record<keyof typeof Endpoints, EndpointConfig> =
   {
     health: {
       method: 'get',
-      path: '/api/healthz',
+      path: '/healthz',
     },
     signin: {
       method: 'post',
-      path: '/api/v1/signin',
+      path: '/v1/auth/signin',
       sensitive: true,
     },
     signup: {
       method: 'post',
-      path: '/api/v1/signup',
+      path: '/v1/auth/signup',
       sensitive: true,
     },
     signout: {
       method: 'post',
-      path: '/api/v1/signout',
+      path: '/v1/auth/signout',
       auth: true,
     },
     verifyEmail: {
       method: 'post',
-      path: '/api/v1/verify-email',
+      path: '/v1/auth/verify-email',
     },
     resendVerification: {
       method: 'post',
-      path: '/api/v1/resend-verification',
+      path: '/v1/auth/resend-verification',
     },
     getCurrentUser: {
       method: 'get',
-      path: '/api/v1/users/me',
+      path: '/v1/users/me',
       auth: true,
     },
     updateCurrentUser: {
       method: 'patch',
-      path: '/api/v1/users/me',
+      path: '/v1/users/me',
       auth: true,
     },
   } as const
