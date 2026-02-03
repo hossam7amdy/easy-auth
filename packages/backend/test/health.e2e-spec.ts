@@ -21,7 +21,7 @@ describe('Health Check (e2e)', () => {
     await app.close()
   })
 
-  it('/api/health (GET)', () => {
+  it(`${ENDPOINT_CONFIGS.health.method.toUpperCase()} ${ENDPOINT_CONFIGS.health.path}`, () => {
     return request(app.getHttpServer())
       .get(ENDPOINT_CONFIGS.health.path)
       .expect(200)

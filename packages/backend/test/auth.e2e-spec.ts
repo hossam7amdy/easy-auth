@@ -40,7 +40,7 @@ describe('Auth (e2e)', () => {
     }
   })
 
-  describe('POST /api/v1/signup', () => {
+  describe(`${ENDPOINT_CONFIGS.signup.method.toUpperCase()} ${ENDPOINT_CONFIGS.signup.path}`, () => {
     const validSignUpData = {
       email: 'test@example.com',
       name: 'Test User',
@@ -110,7 +110,7 @@ describe('Auth (e2e)', () => {
     })
   })
 
-  describe('POST /api/v1/signin', () => {
+  describe(`${ENDPOINT_CONFIGS.signin.method.toUpperCase()} ${ENDPOINT_CONFIGS.signin.path}`, () => {
     const validUser = {
       email: 'signin@example.com',
       name: 'Signin User',
@@ -158,7 +158,7 @@ describe('Auth (e2e)', () => {
     })
   })
 
-  describe('Email Verification Flow (e2e)', () => {
+  describe('Email Verification Flow', () => {
     const testUser = {
       email: 'verify@example.com',
       name: 'Verify User',
@@ -253,7 +253,7 @@ describe('Auth (e2e)', () => {
     })
   })
 
-  describe('POST /api/v1/resend-verification', () => {
+  describe(`${ENDPOINT_CONFIGS.resendVerification.method.toUpperCase()} ${ENDPOINT_CONFIGS.resendVerification.path}`, () => {
     const testUser = {
       email: 'resend@example.com',
       name: 'Resend User',
