@@ -1,12 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
-import {
-  IsEmail,
-  IsString,
-  MinLength,
-  Matches,
-  IsNotEmpty,
-} from 'class-validator'
+import { IsEmail, IsString, MinLength, IsNotEmpty } from 'class-validator'
 import type { SignUpRequest, SignUpResponse } from '@easy-auth/shared'
+import { IsPassword } from '../../../common/decorators'
 
 export class SignUpRequestDto implements SignUpRequest {
   @ApiProperty({
@@ -31,14 +26,7 @@ export class SignUpRequestDto implements SignUpRequest {
     description:
       'Password with at least 8 characters, one letter, one number, and one special character',
   })
-  @IsString()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @Matches(/[a-zA-Z]/, { message: 'Password must contain at least one letter' })
-  @Matches(/\d/, { message: 'Password must contain at least one number' })
-  @Matches(/[!@#$%^&*(),.?":{}|<>]/, {
-    message: 'Password must contain at least one special character',
-  })
-  @IsNotEmpty({ message: 'Password is required' })
+  @IsPassword()
   password: string
 }
 

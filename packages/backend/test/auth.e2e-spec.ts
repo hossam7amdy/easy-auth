@@ -328,4 +328,180 @@ describe('Auth (e2e)', () => {
       expect(response.body.data).toEqual({ success: true })
     })
   })
+
+  describe(`${ENDPOINT_CONFIGS.changePassword.method.toUpperCase()} ${ENDPOINT_CONFIGS.changePassword.path}`, () => {
+    const testUser = {
+      email: 'changepass@example.com',
+      name: 'Change Pass User',
+      password: 'OldP@ss1',
+    }
+
+    let authToken: string
+
+    beforeEach(async () => {
+      // Create and verify user
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signup.path)
+        .send(testUser)
+        .expect(201)
+
+      // Get verification token and verify
+      const tokenDoc = await connection
+        .collection('verification_tokens')
+        .findOne({ type: 'email_verification' })
+      const verificationToken = tokenDoc!.token
+
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.verifyEmail.path)
+        .send({ token: verificationToken })
+        .expect(200)
+
+      // Sign in to get JWT
+      const signinResponse = await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signin.path)
+        .send({
+          email: testUser.email,
+          password: testUser.password,
+        })
+        .expect(200)
+
+      authToken = signinResponse.body.data.jwt
+    })
+
+    it('should successfully change password with valid current password', async () => {
+      const changePasswordData = {
+        currentPassword: testUser.password,
+        newPassword: 'NewP@ss2',
+      }
+
+      const response = await request(app.getHttpServer())
+        .put(ENDPOINT_CONFIGS.changePassword.path)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(changePasswordData)
+        .expect(200)
+
+      expect(response.body.data).toEqual({ success: true })
+    })
+
+    it('should return 401 when no authentication token provided', async () => {
+      const changePasswordData = {
+        currentPassword: testUser.password,
+        newPassword: 'NewP@ss2',
+      }
+
+      await request(app.getHttpServer())
+        .put(ENDPOINT_CONFIGS.changePassword.path)
+        .send(changePasswordData)
+        .expect(401)
+    })
+
+    it('should return 400 when current password is incorrect', async () => {
+      const changePasswordData = {
+        currentPassword: 'WrongP@ss1',
+        newPassword: 'NewP@ss2',
+      }
+
+      const response = await request(app.getHttpServer())
+        .put(ENDPOINT_CONFIGS.changePassword.path)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(changePasswordData)
+        .expect(400)
+
+      expect(response.body.message).toBe('Current password is incorrect')
+    })
+
+    it('should return 400 for weak new password', async () => {
+      const changePasswordData = {
+        currentPassword: testUser.password,
+        newPassword: 'weak',
+      }
+
+      const response = await request(app.getHttpServer())
+        .put(ENDPOINT_CONFIGS.changePassword.path)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(changePasswordData)
+        .expect(400)
+
+      expect(response.body.message).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Password must be at least 8 characters'),
+        ]),
+      )
+    })
+
+    it('should allow signin with new password after successful change', async () => {
+      const newPassword = 'NewP@ss2'
+
+      // Change password
+      await request(app.getHttpServer())
+        .put(ENDPOINT_CONFIGS.changePassword.path)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: testUser.password,
+          newPassword,
+        })
+        .expect(200)
+
+      // Try signin with old password - should fail
+      await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signin.path)
+        .send({
+          email: testUser.email,
+          password: testUser.password,
+        })
+        .expect(401)
+
+      // Try signin with new password - should succeed
+      const signinResponse = await request(app.getHttpServer())
+        .post(ENDPOINT_CONFIGS.signin.path)
+        .send({
+          email: testUser.email,
+          password: newPassword,
+        })
+        .expect(200)
+
+      expect(signinResponse.body.data).toHaveProperty('jwt')
+    })
+
+    it('should return 400 for missing currentPassword field', async () => {
+      const response = await request(app.getHttpServer())
+        .put(ENDPOINT_CONFIGS.changePassword.path)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          newPassword: 'NewP@ss2',
+        })
+        .expect(400)
+
+      expect(response.body.message).toContain('Current password is required')
+    })
+
+    it('should return 400 when new password is the same as the current one', async () => {
+      const changePasswordData = {
+        currentPassword: testUser.password,
+        newPassword: testUser.password,
+      }
+
+      const response = await request(app.getHttpServer())
+        .put(ENDPOINT_CONFIGS.changePassword.path)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(changePasswordData)
+        .expect(400)
+
+      expect(response.body.message).toBe(
+        'New password must be different from the current password',
+      )
+    })
+
+    it('should return 400 for missing newPassword field', async () => {
+      const response = await request(app.getHttpServer())
+        .put(ENDPOINT_CONFIGS.changePassword.path)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: testUser.password,
+        })
+        .expect(400)
+
+      expect(response.body.message).toContain('Password is required')
+    })
+  })
 })
