@@ -22,11 +22,16 @@ import z from 'zod'
 import { passwordSchema } from '@/lib/zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current Password is required'),
-  newPassword: passwordSchema('New Password'),
-  confirmPassword: passwordSchema('Confirm Password'),
-})
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current Password is required'),
+    newPassword: passwordSchema('New Password'),
+    confirmPassword: passwordSchema('Confirm Password'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
 
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
 
@@ -63,14 +68,6 @@ export function ChangePassword() {
   }, [showSuccess, countdown, navigate])
 
   const onSubmit = async (data: ChangePasswordFormData) => {
-    if (data.newPassword !== data.confirmPassword) {
-      setError('confirmPassword', {
-        type: 'manual',
-        message: 'Passwords do not match',
-      })
-      return
-    }
-
     await mutateAsync(
       {
         currentPassword: data.currentPassword,
