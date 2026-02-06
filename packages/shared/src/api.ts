@@ -2,6 +2,12 @@ import type { UserDto } from './types.js'
 
 export type Empty = Record<string, never>
 
+export interface ApiError {
+  statusCode: number
+  message: string
+  timestamp: string
+}
+
 export interface ApiResponse<T> {
   data: T
 }

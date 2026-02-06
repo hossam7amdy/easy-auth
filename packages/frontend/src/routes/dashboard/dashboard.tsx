@@ -57,9 +57,16 @@ export function Dashboard() {
           Welcome to the application.
         </p>
       </CardContent>
-      <CardFooter className="flex">
+      <CardFooter className="flex gap-2">
         <Button onClick={handleLogout} variant="outline" className="flex-1">
           Sign Out
+        </Button>
+        <Button
+          onClick={() => void navigate('/change-password')}
+          variant="outline"
+          className="flex-1"
+        >
+          Change Password
         </Button>
         <Button onClick={() => void refetch()} className="flex-1">
           Refetch

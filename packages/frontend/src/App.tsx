@@ -11,6 +11,10 @@ const router = createBrowserRouter([
         path: '/',
         lazy: () => import('./routes/dashboard'),
       },
+      {
+        path: '/change-password',
+        lazy: () => import('./routes/change-password'),
+      },
     ],
   },
   {

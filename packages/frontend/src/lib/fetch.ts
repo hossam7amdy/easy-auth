@@ -1,4 +1,7 @@
-import type { EndpointConfig } from '@easy-auth/shared'
+import type {
+  EndpointConfig,
+  ApiError as EndpointError,
+} from '@easy-auth/shared'
 import { QueryClient } from '@tanstack/react-query'
 import { getLocalStorageJWT, removeLocalStorageJWT } from './jwt'
 
@@ -52,10 +55,10 @@ export async function callEndpoint<Request, Response>(
     if (response.status === 401) {
       removeLocalStorageJWT()
     }
-    let msg = ''
+    let msg = 'Fetch Error'
     try {
-      const json = (await response.json()) as { error: string }
-      msg = json.error
+      const json: EndpointError = await response.json()
+      msg = json.message
     } finally {
       throw new ApiError(response.status, msg)
     }

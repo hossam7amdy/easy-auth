@@ -9,6 +9,8 @@ import {
   type VerifyEmailResponse,
   type ResendVerificationRequest,
   type ResendVerificationResponse,
+  type ChangePasswordRequest,
+  type ChangePasswordResponse,
 } from '@easy-auth/shared'
 import { callEndpoint, queryClient, type ApiError } from '@/lib/fetch'
 import { removeLocalStorageJWT, setLocalStorageJWT } from '@/lib/jwt'
@@ -79,5 +81,19 @@ export function useSignOut() {
       queryClient.clear()
       return Promise.resolve({ success: true })
     },
+  })
+}
+
+export function useChangePassword(): UseMutationResult<
+  ChangePasswordResponse,
+  ApiError,
+  ChangePasswordRequest
+> {
+  return useMutation({
+    mutationFn: (data: ChangePasswordRequest) =>
+      callEndpoint<ChangePasswordRequest, ChangePasswordResponse>(
+        ENDPOINT_CONFIGS.changePassword,
+        data,
+      ),
   })
 }
