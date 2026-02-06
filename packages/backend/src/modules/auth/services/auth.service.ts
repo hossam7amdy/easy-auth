@@ -3,11 +3,17 @@ import {
   ConflictException,
   UnauthorizedException,
   ForbiddenException,
+  BadRequestException,
   Logger,
 } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
 import { UserRepository } from '../../user/repositories/user.repository'
-import type { UserDto, SignInRequest, SignUpRequest } from '@easy-auth/shared'
+import type {
+  UserDto,
+  SignInRequest,
+  SignUpRequest,
+  ChangePasswordRequest,
+} from '@easy-auth/shared'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { Configuration } from '../../../common/config'
@@ -145,6 +151,34 @@ export class AuthService {
     const token = await this.verificationService.createToken(user.id)
 
     this.sendVerificationEmail(user, token)
+
+    return { success: true }
+  }
+
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordRequest,
+  ): Promise<{ success: boolean }> {
+    const { currentPassword, newPassword } = changePasswordDto
+
+    const user = await this.userRepository.findById(userId)
+    if (!user) {
+      throw new UnauthorizedException('User not found')
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    )
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestException('Current password is incorrect')
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS)
+
+    await this.userRepository.update(userId, {
+      password: hashedNewPassword,
+    })
 
     return { success: true }
   }

@@ -39,6 +39,7 @@ describe('AuthService', () => {
   beforeEach(async () => {
     const mockUserRepository = {
       findByEmail: jest.fn(),
+      findById: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     }
@@ -299,6 +300,77 @@ describe('AuthService', () => {
       expect(mockVerificationService.createToken).not.toHaveBeenCalled()
       expect(mockEmailService.sendMail).not.toHaveBeenCalled()
       expect(result).toEqual({ success: true })
+    })
+  })
+
+  describe('changePassword', () => {
+    const userId = '507f1f77bcf86cd799439011'
+    const changePasswordDto = {
+      currentPassword: 'OldP@ss1',
+      newPassword: 'NewP@ss2',
+    }
+
+    it('should successfully change password with valid current password', async () => {
+      userRepository.findById.mockResolvedValue(mockUser as never)
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+      ;(bcrypt.hash as jest.Mock).mockResolvedValue('hashedNewPassword')
+      userRepository.update.mockResolvedValue(mockUser as never)
+
+      const result = await service.changePassword(userId, changePasswordDto)
+
+      expect(userRepository.findById).toHaveBeenCalledWith(userId)
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        changePasswordDto.currentPassword,
+        mockUser.password,
+      )
+      expect(bcrypt.hash).toHaveBeenCalledWith(
+        changePasswordDto.newPassword,
+        10,
+      )
+      expect(userRepository.update).toHaveBeenCalledWith(userId, {
+        password: 'hashedNewPassword',
+      })
+      expect(result).toEqual({ success: true })
+    })
+
+    it('should throw UnauthorizedException when user not found', async () => {
+      userRepository.findById.mockResolvedValue(null)
+
+      await expect(
+        service.changePassword(userId, changePasswordDto),
+      ).rejects.toThrow(UnauthorizedException)
+      await expect(
+        service.changePassword(userId, changePasswordDto),
+      ).rejects.toThrow('User not found')
+      expect(bcrypt.compare).not.toHaveBeenCalled()
+      expect(userRepository.update).not.toHaveBeenCalled()
+    })
+
+    it('should throw BadRequestException when current password is incorrect', async () => {
+      userRepository.findById.mockResolvedValue(mockUser as never)
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
+
+      await expect(
+        service.changePassword(userId, changePasswordDto),
+      ).rejects.toThrow(BadRequestException)
+      await expect(
+        service.changePassword(userId, changePasswordDto),
+      ).rejects.toThrow('Current password is incorrect')
+      expect(bcrypt.hash).not.toHaveBeenCalled()
+      expect(userRepository.update).not.toHaveBeenCalled()
+    })
+
+    it('should hash new password before storing', async () => {
+      userRepository.findById.mockResolvedValue(mockUser as never)
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+      ;(bcrypt.hash as jest.Mock).mockResolvedValue('hashedNewPassword')
+      userRepository.update.mockResolvedValue(mockUser as never)
+
+      await service.changePassword(userId, changePasswordDto)
+
+      const updateCall = userRepository.update.mock.calls[0][1]
+      expect(updateCall.password).not.toBe(changePasswordDto.newPassword)
+      expect(updateCall.password).toBe('hashedNewPassword')
     })
   })
 })

@@ -52,3 +52,11 @@ export type GetCurrentUserResponse = ApiResponse<UserDto>
 
 export type UpdateCurrentUserRequest = Pick<UserDto, 'name'>
 export type UpdateCurrentUserResponse = ApiResponse<UserDto>
+
+export type ChangePasswordRequest = {
+  currentPassword: string
+  newPassword: string
+}
+export type ChangePasswordResponse = ApiResponse<{
+  success: boolean
+}>

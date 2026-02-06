@@ -1,6 +1,6 @@
 export type EndpointConfig = {
   path: string
-  method: 'get' | 'post' | 'patch'
+  method: 'get' | 'post' | 'patch' | 'put'
   auth?: boolean
   sensitive?: boolean
 }
@@ -14,6 +14,7 @@ export const Endpoints = {
   resendVerification: 'resendVerification',
   getCurrentUser: 'getCurrentUser',
   updateCurrentUser: 'updateCurrentUser',
+  changePassword: 'changePassword',
 }
 
 export const ENDPOINT_CONFIGS: Record<keyof typeof Endpoints, EndpointConfig> =
@@ -54,5 +55,11 @@ export const ENDPOINT_CONFIGS: Record<keyof typeof Endpoints, EndpointConfig> =
       method: 'patch',
       path: '/v1/users/me',
       auth: true,
+    },
+    changePassword: {
+      method: 'put',
+      path: '/v1/auth/change-password',
+      auth: true,
+      sensitive: true,
     },
   } as const

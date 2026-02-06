@@ -1,4 +1,12 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common'
+import {
+  Controller,
+  Post,
+  Put,
+  Body,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common'
 import {
   ApiTags,
   ApiOperation,
@@ -8,9 +16,10 @@ import {
   ApiOkResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
-import { ENDPOINT_CONFIGS } from '@easy-auth/shared'
+import { ENDPOINT_CONFIGS, type UserDto } from '@easy-auth/shared'
 import { AuthService } from '../services/auth.service'
 import { SignUpRequestDto, SignUpResponseDto } from '../dto/signup.dto'
 import { SignInRequestDto, SignInResponseDto } from '../dto/signin.dto'
@@ -22,7 +31,13 @@ import {
   ResendVerificationRequestDto,
   ResendVerificationResponseDto,
 } from '../dto/resend-verification.dto'
+import {
+  ChangePasswordRequestDto,
+  ChangePasswordResponseDto,
+} from '../dto/change-password.dto'
 import { HttpResponse } from '../../../common/http'
+import { JwtAuthGuard } from '../guards/jwt-auth.guard'
+import { CurrentUser } from '../../../common/decorators'
 
 @ApiTags('Auth')
 @Controller()
@@ -76,6 +91,28 @@ export class AuthController {
     @Body() resendDto: ResendVerificationRequestDto,
   ): Promise<ResendVerificationResponseDto> {
     const result = await this.authService.resendVerification(resendDto.email)
+    return new HttpResponse(result)
+  }
+
+  @Put(ENDPOINT_CONFIGS.changePassword.path)
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { ttl: 900000, limit: 5 } }) // 5 requests per 15 minutes
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Change password for authenticated user' })
+  @ApiOkResponse({ type: ChangePasswordResponseDto })
+  @ApiBadRequestResponse({
+    description: 'Invalid current password or validation failed',
+  })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  async changePassword(
+    @CurrentUser() user: UserDto,
+    @Body() changePasswordDto: ChangePasswordRequestDto,
+  ): Promise<ChangePasswordResponseDto> {
+    const result = await this.authService.changePassword(
+      user.id,
+      changePasswordDto,
+    )
     return new HttpResponse(result)
   }
 }

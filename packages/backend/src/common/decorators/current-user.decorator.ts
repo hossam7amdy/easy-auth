@@ -1,9 +1,9 @@
+import { UserDto } from '@easy-auth/shared'
 import { createParamDecorator, ExecutionContext } from '@nestjs/common'
-import { AuthenticatedRequest } from '../types'
 
 export const CurrentUser = createParamDecorator(
   (_: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest<AuthenticatedRequest>()
+    const request = ctx.switchToHttp().getRequest<{ user: UserDto }>()
     return request.user
   },
 )

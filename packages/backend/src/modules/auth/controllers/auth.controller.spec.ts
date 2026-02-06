@@ -21,6 +21,7 @@ describe('AuthController', () => {
       signIn: jest.fn(),
       verifyEmail: jest.fn(),
       resendVerification: jest.fn(),
+      changePassword: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -87,6 +88,37 @@ describe('AuthController', () => {
 
       expect(authService.resendVerification).toHaveBeenCalledWith(
         resendDto.email,
+      )
+      expect(result).toEqual(new HttpResponse({ success: true }))
+    })
+  })
+
+  describe('changePassword', () => {
+    const mockUserDto = {
+      id: mockUser.id,
+      email: mockUser.email,
+      name: mockUser.name,
+      isEmailVerified: true,
+      createdAt: mockUser.createdAt,
+      updatedAt: mockUser.updatedAt,
+    }
+
+    const changePasswordDto = {
+      currentPassword: 'OldP@ss1',
+      newPassword: 'NewP@ss2',
+    }
+
+    it('should change password and return success', async () => {
+      authService.changePassword.mockResolvedValue({ success: true })
+
+      const result = await controller.changePassword(
+        mockUserDto,
+        changePasswordDto,
+      )
+
+      expect(authService.changePassword).toHaveBeenCalledWith(
+        mockUser.id,
+        changePasswordDto,
       )
       expect(result).toEqual(new HttpResponse({ success: true }))
     })
