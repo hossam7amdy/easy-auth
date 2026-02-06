@@ -174,6 +174,12 @@ export class AuthService {
       throw new BadRequestException('Current password is incorrect')
     }
 
+    if (currentPassword === newPassword) {
+      throw new BadRequestException(
+        'New password must be different from the current password',
+      )
+    }
+
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS)
 
     await this.userRepository.update(userId, {
