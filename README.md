@@ -51,7 +51,7 @@ The following core authentication features are required to make this module comp
 
 - **Password Management**:
   - **Forget & Reset Password**: Secure flows for recovering lost passwords.
-  - **Change Password**: Allow authenticated users to update their password.
+  - ~~**Change Password**: Allow authenticated users to update their password.~~
 - **OAuth Login**: Support for social login providers (e.g., Google, GitHub).
 - **Session Security**: Implementation of **Refresh Tokens** and token rotation for secure, long-lived sessions.
 - **Profile Management**: Endpoints to update authenticated user details (e.g., name, avatar).
