@@ -360,6 +360,28 @@ describe('AuthService', () => {
       expect(userRepository.update).not.toHaveBeenCalled()
     })
 
+    it('should throw BadRequestException when new password is the same as the current password', async () => {
+      userRepository.findById.mockResolvedValue(mockUser as never)
+      ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+
+      const samePasswordDto = {
+        currentPassword: 'OldP@ss1',
+        newPassword: 'OldP@ss1',
+      }
+
+      await expect(
+        service.changePassword(userId, samePasswordDto),
+      ).rejects.toThrow(BadRequestException)
+      await expect(
+        service.changePassword(userId, samePasswordDto),
+      ).rejects.toThrow(
+        'New password must be different from the current password',
+      )
+
+      expect(bcrypt.hash).not.toHaveBeenCalled()
+      expect(userRepository.update).not.toHaveBeenCalled()
+    })
+
     it('should hash new password before storing', async () => {
       userRepository.findById.mockResolvedValue(mockUser as never)
       ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)

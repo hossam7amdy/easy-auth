@@ -475,6 +475,23 @@ describe('Auth (e2e)', () => {
       expect(response.body.message).toContain('Current password is required')
     })
 
+    it('should return 400 when new password is the same as the current one', async () => {
+      const changePasswordData = {
+        currentPassword: testUser.password,
+        newPassword: testUser.password,
+      }
+
+      const response = await request(app.getHttpServer())
+        .put(ENDPOINT_CONFIGS.changePassword.path)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(changePasswordData)
+        .expect(400)
+
+      expect(response.body.message).toBe(
+        'New password must be different from the current password',
+      )
+    })
+
     it('should return 400 for missing newPassword field', async () => {
       const response = await request(app.getHttpServer())
         .put(ENDPOINT_CONFIGS.changePassword.path)
