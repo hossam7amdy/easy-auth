@@ -1,20 +1,21 @@
-import { Injectable, Logger } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import type { ConfigType } from '@nestjs/config'
 import { createTransport, Transporter } from 'nodemailer'
-import { Configuration } from '../../../common/config'
+import mailerConfig from '../../../config/mailer.config'
 
 @Injectable()
 export class EmailService {
-  private readonly emailConfig: Configuration['email']
-  private readonly logger = new Logger(EmailService.name)
   private transporter: Transporter
+  private logger = new Logger(EmailService.name)
 
-  constructor(private readonly configService: ConfigService<Configuration>) {
-    const emailConfig = this.configService.getOrThrow('email', {
-      infer: true,
+  constructor(
+    @Inject(mailerConfig.KEY)
+    private config: ConfigType<typeof mailerConfig>,
+  ) {
+    this.transporter = createTransport(this.config.smtp)
+    this.transporter.verify().catch((error) => {
+      this.logger.error('Failed to connect to SMTP server', error)
     })
-    this.emailConfig = emailConfig
-    this.transporter = createTransport(emailConfig.smtp)
   }
 
   async sendMail(options: {
@@ -25,7 +26,7 @@ export class EmailService {
   }): Promise<void> {
     try {
       await this.transporter.sendMail({
-        from: this.emailConfig.from,
+        from: this.config.from,
         ...options,
       })
       this.logger.log(`Email sent to ${options.to}: ${options.subject}`)

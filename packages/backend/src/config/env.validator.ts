@@ -3,68 +3,80 @@ import {
   IsInt,
   IsUrl,
   IsString,
-  IsNotEmpty,
-  IsOptional,
   validateSync,
+  IsEnum,
+  IsNotEmpty,
 } from 'class-validator'
 
-class EnvironmentVariables {
+export enum NodeEnv {
+  Development = 'development',
+  Production = 'production',
+  Test = 'test',
+}
+
+export class EnvironmentVariables {
   @IsInt()
-  @IsOptional()
-  PORT: number = 3000
+  @IsNotEmpty()
+  PORT: number
+
+  @IsEnum(NodeEnv)
+  @IsNotEmpty()
+  NODE_ENV: `${NodeEnv}`
 
   @IsUrl({ require_tld: false, protocols: ['mongodb'] })
-  @IsOptional()
-  MONGODB_URI: string = 'mongodb://localhost:27017/easy-auth'
+  @IsNotEmpty()
+  MONGODB_URI: string
 
   @IsUrl({ require_tld: false })
-  @IsOptional()
-  FRONTEND_URL: string = 'http://localhost:5173'
+  @IsNotEmpty()
+  FRONTEND_URL: string
 
   @IsString()
-  @IsNotEmpty({
-    message: 'JWT_SECRET environment variable is required for security',
-  })
+  @IsNotEmpty()
+  ALLOWED_CORS: string
+
+  @IsString()
+  @IsNotEmpty()
   JWT_SECRET: string
 
   @IsString()
-  @IsOptional()
-  JWT_EXPIRES_IN: string = '15m'
+  @IsNotEmpty()
+  JWT_EXPIRES_IN: string
 
   @IsInt()
-  @IsOptional()
-  THROTTLE_TTL: number = 60000
+  @IsNotEmpty()
+  THROTTLE_TTL: number
 
   @IsInt()
-  @IsOptional()
-  THROTTLE_LIMIT: number = 60
+  @IsNotEmpty()
+  THROTTLE_LIMIT: number
 
   @IsString()
-  @IsOptional()
-  EMAIL_FROM: string = 'noreply@localhost'
+  @IsNotEmpty()
+  EMAIL_FROM: string
 
   @IsString()
-  @IsOptional()
-  SMTP_HOST: string = 'localhost'
+  @IsNotEmpty()
+  SMTP_HOST: string
 
   @IsInt()
-  @IsOptional()
-  SMTP_PORT: number = 1025
+  @IsNotEmpty()
+  SMTP_PORT: number
 
   @IsString()
-  @IsOptional()
-  SMTP_SECURE: string = 'false'
+  @IsNotEmpty()
+  SMTP_SECURE: string
 
   @IsString()
-  @IsOptional()
-  SMTP_USER?: string
+  @IsNotEmpty()
+  SMTP_USER: string
 
   @IsString()
-  @IsOptional()
-  SMTP_PASS?: string
+  @IsNotEmpty()
+  SMTP_PASS: string
 }
 
-export function validate(config: Record<string, unknown>) {
+export default function envValidator(config: Record<string, unknown>) {
   const validatedConfig = plainToInstance(EnvironmentVariables, config, {
     enableImplicitConversion: true,
   })
