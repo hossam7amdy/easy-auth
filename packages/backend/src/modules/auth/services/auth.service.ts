@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   BadRequestException,
   Logger,
+  Inject,
 } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
 import { UserRepository } from '../../user/repositories/user.repository'
@@ -15,11 +16,12 @@ import type {
   ChangePasswordRequest,
 } from '@easy-auth/shared'
 import { JwtService } from '@nestjs/jwt'
-import { ConfigService } from '@nestjs/config'
-import { Configuration } from '../../../common/config'
+import type { ConfigType } from '@nestjs/config'
 import { EmailService } from '../../email/services/email.service'
 import { VerificationService } from '../../verification/services/verification.service'
 import { getVerificationEmailTemplate } from '../../email/templates/verification.template'
+import jwtConfig from '../../../config/jwt.config'
+import appConfiguration from '../../../config/app.config'
 
 const SALT_ROUNDS = 10
 
@@ -28,8 +30,11 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name)
 
   constructor(
+    @Inject(jwtConfig.KEY)
+    private config: ConfigType<typeof jwtConfig>,
+    @Inject(appConfiguration.KEY)
+    private appConfig: ConfigType<typeof appConfiguration>,
     private jwtService: JwtService,
-    private configService: ConfigService<Configuration>,
     private userRepository: UserRepository,
     private emailService: EmailService,
     private verificationService: VerificationService,
@@ -39,12 +44,8 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email }
 
     const accessToken = this.jwtService.signAsync(payload, {
-      secret: this.configService.getOrThrow('jwt.secret', {
-        infer: true,
-      }),
-      expiresIn: this.configService.getOrThrow('jwt.expiresIn', {
-        infer: true,
-      }),
+      secret: this.config.secret,
+      expiresIn: this.config.expiresIn as never,
     })
 
     return accessToken
@@ -54,9 +55,7 @@ export class AuthService {
     user: { email: string; name: string },
     token: string,
   ): void {
-    const frontendUrl = this.configService.getOrThrow('frontend.url', {
-      infer: true,
-    })
+    const frontendUrl = this.appConfig.frontendUrl
     const verificationLink = `${frontendUrl}/verify-email?token=${token}`
 
     const emailTemplate = getVerificationEmailTemplate({

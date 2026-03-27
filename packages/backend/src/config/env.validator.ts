@@ -22,6 +22,10 @@ class EnvironmentVariables {
   FRONTEND_URL: string = 'http://localhost:5173'
 
   @IsString()
+  @IsOptional()
+  ALLOWED_CORS: string = 'http://localhost:5173'
+
+  @IsString()
   @IsNotEmpty({
     message: 'JWT_SECRET environment variable is required for security',
   })
@@ -64,7 +68,7 @@ class EnvironmentVariables {
   SMTP_PASS?: string
 }
 
-export function validate(config: Record<string, unknown>) {
+export default function envValidator(config: Record<string, unknown>) {
   const validatedConfig = plainToInstance(EnvironmentVariables, config, {
     enableImplicitConversion: true,
   })

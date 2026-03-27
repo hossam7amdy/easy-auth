@@ -1,14 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { ConfigService } from '@nestjs/config'
 import { EmailService } from './email.service'
+import mailerConfig from '../../../config/mailer.config'
 
 describe('EmailService', () => {
   let service: EmailService
-  let configService: ConfigService
-
-  const mockConfigService = {
-    getOrThrow: jest.fn(),
-  }
 
   const mockTransporter = {
     sendMail: jest.fn(),
@@ -17,32 +12,24 @@ describe('EmailService', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
 
-    mockConfigService.getOrThrow.mockReturnValue({
-      from: 'noreply@test.com',
-      smtp: {
-        host: 'localhost',
-        port: 1025,
-        secure: false,
-      },
-    })
-
-    // Mock nodemailer createTransport
-    jest.mock('nodemailer', () => ({
-      createTransport: jest.fn(() => mockTransporter),
-    }))
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EmailService,
         {
-          provide: ConfigService,
-          useValue: mockConfigService,
+          provide: mailerConfig.KEY,
+          useValue: {
+            from: 'noreply@test.com',
+            smtp: {
+              host: 'localhost',
+              port: 1025,
+              secure: false,
+            },
+          },
         },
       ],
     }).compile()
 
     service = module.get<EmailService>(EmailService)
-    configService = module.get<ConfigService>(ConfigService)
 
     // Manually set transporter for testing
     ;(service as any).transporter = mockTransporter

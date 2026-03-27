@@ -7,8 +7,9 @@ import {
 } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
-import { ConfigService } from '@nestjs/config'
 import { AuthService } from './auth.service'
+import jwtConfig from '../../../config/jwt.config'
+import appConfiguration from '../../../config/app.config'
 import { UserRepository } from '../../user/repositories/user.repository'
 import { EmailService } from '../../email/services/email.service'
 import { VerificationService } from '../../verification/services/verification.service'
@@ -19,8 +20,6 @@ describe('AuthService', () => {
   let service: AuthService
   let userRepository: jest.Mocked<UserRepository>
   let jwtService: jest.Mocked<JwtService>
-  let configService: jest.Mocked<ConfigService>
-
   const mockUser = {
     id: '507f1f77bcf86cd799439011',
     email: 'test@example.com',
@@ -48,10 +47,6 @@ describe('AuthService', () => {
       signAsync: jest.fn(),
     }
 
-    const mockConfigService = {
-      getOrThrow: jest.fn().mockReturnValue('http://localhost:5173'),
-    }
-
     const mockEmailService = {
       sendMail: jest.fn().mockResolvedValue(undefined),
     }
@@ -68,7 +63,14 @@ describe('AuthService', () => {
         AuthService,
         { provide: UserRepository, useValue: mockUserRepository },
         { provide: JwtService, useValue: mockJwtService },
-        { provide: ConfigService, useValue: mockConfigService },
+        {
+          provide: jwtConfig.KEY,
+          useValue: { secret: 'secret', expiresIn: '1d' },
+        },
+        {
+          provide: appConfiguration.KEY,
+          useValue: { frontendUrl: 'http://localhost:5173' },
+        },
         { provide: EmailService, useValue: mockEmailService },
         { provide: VerificationService, useValue: mockVerificationService },
       ],
@@ -77,7 +79,6 @@ describe('AuthService', () => {
     service = module.get<AuthService>(AuthService)
     userRepository = module.get(UserRepository)
     jwtService = module.get(JwtService)
-    configService = module.get(ConfigService)
   })
 
   afterEach(() => {
@@ -142,10 +143,6 @@ describe('AuthService', () => {
       userRepository.findByEmail.mockResolvedValue(mockUser as never)
       ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
       jwtService.signAsync.mockResolvedValue('mockToken' as never)
-      configService.getOrThrow
-        .mockReturnValueOnce('secret')
-        .mockReturnValueOnce('1d')
-
       const result = await service.signIn(signInDto)
 
       expect(userRepository.findByEmail).toHaveBeenCalledWith(signInDto.email)

@@ -3,10 +3,10 @@ import helmet from 'helmet'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { AppModule } from './app.module'
 import { ConsoleLogger, Logger, ValidationPipe } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
+import { ConfigType } from '@nestjs/config'
 import { HttpExceptionFilter } from './common/filters'
 import { LoggingInterceptor } from './common/interceptors'
-import { Configuration } from './common/config'
+import appConfig from './config/app.config'
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap')
@@ -18,10 +18,10 @@ async function bootstrap() {
 
   app.use(helmet())
 
-  const configService = app.get(ConfigService<Configuration>)
+  const config: ConfigType<typeof appConfig> = app.get(appConfig.KEY)
 
   app.enableCors({
-    origin: configService.getOrThrow('frontend.url', { infer: true }),
+    origin: config.allowedCors,
   })
 
   app.useGlobalPipes(
@@ -35,21 +35,20 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter())
   app.useGlobalInterceptors(new LoggingInterceptor())
 
-  const config = new DocumentBuilder()
+  const openApiConfig = new DocumentBuilder()
     .setTitle('Easy Auth API')
     .setDescription('The Easy Auth API description')
     .setVersion('1.0')
     .addBearerAuth()
     .build()
 
-  const document = SwaggerModule.createDocument(app, config)
+  const document = SwaggerModule.createDocument(app, openApiConfig)
   SwaggerModule.setup('api', app, document)
 
-  const port = configService.getOrThrow('port', { infer: true })
-  await app.listen(port)
+  await app.listen(config.port)
 
-  logger.log(`Application is running on: http://localhost:${port}`)
-  logger.log(`Swagger documentation: http://localhost:${port}/api`)
+  logger.log(`Application is running on: http://localhost:${config.port}`)
+  logger.log(`Swagger documentation: http://localhost:${config.port}/api`)
 }
 
 void bootstrap()
