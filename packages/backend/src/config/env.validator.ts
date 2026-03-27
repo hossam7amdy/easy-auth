@@ -1,5 +1,12 @@
 import { plainToInstance } from 'class-transformer'
-import { IsInt, IsUrl, IsString, validateSync, IsEnum } from 'class-validator'
+import {
+  IsInt,
+  IsUrl,
+  IsString,
+  validateSync,
+  IsEnum,
+  IsNotEmpty,
+} from 'class-validator'
 
 export enum NodeEnv {
   Development = 'development',
@@ -9,50 +16,63 @@ export enum NodeEnv {
 
 export class EnvironmentVariables {
   @IsInt()
-  PORT: number = 3000
+  @IsNotEmpty()
+  PORT: number
 
   @IsEnum(NodeEnv)
-  NODE_ENV: `${NodeEnv}` = NodeEnv.Development
+  @IsNotEmpty()
+  NODE_ENV: `${NodeEnv}`
 
   @IsUrl({ require_tld: false, protocols: ['mongodb'] })
-  MONGODB_URI: string = 'mongodb://localhost:27017/easy-auth'
+  @IsNotEmpty()
+  MONGODB_URI: string
 
   @IsUrl({ require_tld: false })
-  FRONTEND_URL: string = 'http://localhost:5173'
+  @IsNotEmpty()
+  FRONTEND_URL: string
 
   @IsString()
-  ALLOWED_CORS: string = 'http://localhost:5173'
+  @IsNotEmpty()
+  ALLOWED_CORS: string
 
-  @IsString()
   @IsString()
   @IsNotEmpty()
   JWT_SECRET: string
 
   @IsString()
-  JWT_EXPIRES_IN: string = '15m'
+  @IsNotEmpty()
+  JWT_EXPIRES_IN: string
 
   @IsInt()
-  THROTTLE_TTL: number = 60000
+  @IsNotEmpty()
+  THROTTLE_TTL: number
 
   @IsInt()
-  THROTTLE_LIMIT: number = 60
+  @IsNotEmpty()
+  THROTTLE_LIMIT: number
 
   @IsString()
-  EMAIL_FROM: string = 'noreply@localhost'
+  @IsNotEmpty()
+  EMAIL_FROM: string
 
   @IsString()
-  SMTP_HOST: string = 'localhost'
+  @IsNotEmpty()
+  SMTP_HOST: string
 
   @IsInt()
-  SMTP_PORT: number = 1025
+  @IsNotEmpty()
+  SMTP_PORT: number
 
   @IsString()
-  SMTP_SECURE: string = 'false'
+  @IsNotEmpty()
+  SMTP_SECURE: string
 
   @IsString()
+  @IsNotEmpty()
   SMTP_USER: string
 
   @IsString()
+  @IsNotEmpty()
   SMTP_PASS: string
 }
 

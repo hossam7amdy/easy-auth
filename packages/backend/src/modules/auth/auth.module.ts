@@ -22,9 +22,6 @@ import jwtConfig from '../../config/jwt.config'
       inject: [jwtConfig.KEY],
       useFactory: (config: ConfigType<typeof jwtConfig>) => ({
         secret: config.secret,
-        signOptions: {
-          expiresIn: config.expiresIn!,
-        },
       }),
     }),
   ],
