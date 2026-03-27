@@ -23,7 +23,7 @@ import jwtConfig from '../../config/jwt.config'
       useFactory: (config: ConfigType<typeof jwtConfig>) => ({
         secret: config.secret,
         signOptions: {
-          expiresIn: config.expiresIn as never,
+          expiresIn: config.expiresIn!,
         },
       }),
     }),
