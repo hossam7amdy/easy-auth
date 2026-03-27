@@ -1,71 +1,57 @@
 import { plainToInstance } from 'class-transformer'
-import {
-  IsInt,
-  IsUrl,
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  validateSync,
-} from 'class-validator'
+import { IsInt, IsUrl, IsString, validateSync, IsEnum } from 'class-validator'
 
-class EnvironmentVariables {
+export enum NodeEnv {
+  Development = 'development',
+  Production = 'production',
+  Test = 'test',
+}
+
+export class EnvironmentVariables {
   @IsInt()
-  @IsOptional()
   PORT: number = 3000
 
+  @IsEnum(NodeEnv)
+  NODE_ENV: `${NodeEnv}` = NodeEnv.Development
+
   @IsUrl({ require_tld: false, protocols: ['mongodb'] })
-  @IsOptional()
   MONGODB_URI: string = 'mongodb://localhost:27017/easy-auth'
 
   @IsUrl({ require_tld: false })
-  @IsOptional()
   FRONTEND_URL: string = 'http://localhost:5173'
 
   @IsString()
-  @IsOptional()
   ALLOWED_CORS: string = 'http://localhost:5173'
 
   @IsString()
-  @IsNotEmpty({
-    message: 'JWT_SECRET environment variable is required for security',
-  })
   JWT_SECRET: string
 
   @IsString()
-  @IsOptional()
   JWT_EXPIRES_IN: string = '15m'
 
   @IsInt()
-  @IsOptional()
   THROTTLE_TTL: number = 60000
 
   @IsInt()
-  @IsOptional()
   THROTTLE_LIMIT: number = 60
 
   @IsString()
-  @IsOptional()
   EMAIL_FROM: string = 'noreply@localhost'
 
   @IsString()
-  @IsOptional()
   SMTP_HOST: string = 'localhost'
 
   @IsInt()
-  @IsOptional()
   SMTP_PORT: number = 1025
 
   @IsString()
-  @IsOptional()
   SMTP_SECURE: string = 'false'
 
   @IsString()
-  @IsOptional()
-  SMTP_USER?: string
+  SMTP_USER: string
 
   @IsString()
-  @IsOptional()
-  SMTP_PASS?: string
+  SMTP_PASS: string
 }
 
 export default function envValidator(config: Record<string, unknown>) {

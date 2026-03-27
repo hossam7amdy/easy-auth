@@ -4,7 +4,7 @@ export default registerAs('mailer', () => ({
   from: process.env.EMAIL_FROM,
   smtp: {
     host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
+    port: process.env.SMTP_PORT,
     secure: process.env.SMTP_SECURE === 'true',
     auth: {
       user: process.env.SMTP_USER,

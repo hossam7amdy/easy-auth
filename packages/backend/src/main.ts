@@ -43,7 +43,9 @@ async function bootstrap() {
     .build()
 
   const document = SwaggerModule.createDocument(app, openApiConfig)
-  SwaggerModule.setup('api', app, document)
+  SwaggerModule.setup('api', app, document, {
+    ui: config.nodeEnv !== 'production',
+  })
 
   await app.listen(config.port)
 
