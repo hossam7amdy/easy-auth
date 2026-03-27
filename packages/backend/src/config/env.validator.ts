@@ -24,6 +24,8 @@ export class EnvironmentVariables {
   ALLOWED_CORS: string = 'http://localhost:5173'
 
   @IsString()
+  @IsString()
+  @IsNotEmpty()
   JWT_SECRET: string
 
   @IsString()
